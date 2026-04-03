@@ -186,6 +186,7 @@
       { amount:10000, title:"Legend Reward", detail:"Unlock the final legendary reward tier.", emoji:"👑" }
     ];
     const defaultForm = { duration:30, completedHomework:true, stayedInOnePlace:true, gotUp:false, talked:false, tookBreak:false, focused:true, goodBehavior:false, noComplaint:false, selfPlayHour:false, constructivePlayHour:false, bathAndBrush:false, goodBehaviorAtHome:false, noMessAllDay:false, listenedToParents:false, notes:"" };
+    const defaultSpendForm = { amount:500, purchaseNote:"" };
     const toggleDefinitions = [
       { key:"completedHomework", label:"Homework fully completed", emoji:"✅", positive:true },
       { key:"stayedInOnePlace", label:"Sat in one place", emoji:"🪑", positive:true },
@@ -202,13 +203,14 @@
       { key:"noMessAllDay", label:"Did not create a mess all day", emoji:"🧼", positive:true },
       { key:"listenedToParents", label:"Said yes to mother and father", emoji:"🙌", positive:true }
     ];
-    let state = { profileName:"Homework Hero", childPhoto:"", records:{}, selectedDate:todayKey(), form:{ ...defaultForm }, currentMonth:new Date(), lastSavedMessage:"", soundOn:true, celebration:null };
+    let state = { profileName:"Homework Hero", childPhoto:"", records:{}, debits:[], selectedDate:todayKey(), form:{ ...defaultForm }, spendForm:{ ...defaultSpendForm }, currentMonth:new Date(), lastSavedMessage:"", soundOn:true, celebration:null };
     let weeklyChart = null;
 
     function dateKeyFromDate(date){ const y=date.getFullYear(); const m=String(date.getMonth()+1).padStart(2,"0"); const d=String(date.getDate()).padStart(2,"0"); return `${y}-${m}-${d}`; }
     function todayKey(){ return dateKeyFromDate(new Date()); }
     function formatDate(dateKey){ const d=new Date(dateKey+"T00:00:00"); return d.toLocaleDateString(undefined,{ weekday:"short", day:"numeric", month:"short", year:"numeric" }); }
     function getMonthLabel(date){ return date.toLocaleDateString(undefined,{ month:"long", year:"numeric" }); }
+    function addDaysToDateKey(dateKey, days){ const date=new Date(dateKey+"T00:00:00"); date.setDate(date.getDate()+days); return dateKeyFromDate(date); }
     function calculateStars(entry){
       if (Number(entry.duration) > 60) return { baseStars:0, bonusStars:0, totalStars:0, reasons:["More than 60 minutes means 0 stars for the day."], status:"reset" };
       let baseStars = 7;
@@ -242,13 +244,20 @@
     function weekLabelFromDate(dateKey){ const start=getWeekStart(dateKey); const end=new Date(start); end.setDate(start.getDate()+6); return `${start.toLocaleDateString(undefined,{ month:"short", day:"numeric" })} - ${end.toLocaleDateString(undefined,{ month:"short", day:"numeric" })}`; }
     function getCalendarDays(currentMonth){ const y=currentMonth.getFullYear(); const m=currentMonth.getMonth(); const first=new Date(y,m,1); const last=new Date(y,m+1,0); const start=new Date(first); const startDay=start.getDay(); const mondayShift=startDay===0?6:startDay-1; start.setDate(start.getDate()-mondayShift); const end=new Date(last); const endDay=end.getDay(); const sundayShift=endDay===0?0:7-endDay; end.setDate(end.getDate()+sundayShift); const days=[]; const cursor=new Date(start); while (cursor<=end){ days.push(new Date(cursor)); cursor.setDate(cursor.getDate()+1);} return days; }
     function toneClass(stars){ if (stars >= 8) return "tone-high"; if (stars >= 5) return "tone-mid"; if (stars >= 1) return "tone-low"; return "tone-zero"; }
-    function saveState(){ localStorage.setItem(STORAGE_KEY, JSON.stringify({ version:1, profileName:state.profileName, childPhoto:state.childPhoto, records:state.records, soundOn:state.soundOn })); }
-    function loadState(){ const raw=localStorage.getItem(STORAGE_KEY); if (!raw) return; try{ const parsed=JSON.parse(raw); state.profileName=parsed.profileName||"Homework Hero"; state.childPhoto=parsed.childPhoto||""; state.records=parsed.records||{}; state.soundOn=parsed.soundOn ?? true; } catch(err){ console.error("Could not load saved data", err); } }
+    function saveState(){ localStorage.setItem(STORAGE_KEY, JSON.stringify({ version:2, profileName:state.profileName, childPhoto:state.childPhoto, records:state.records, debits:state.debits, soundOn:state.soundOn })); }
+    function loadState(){ const raw=localStorage.getItem(STORAGE_KEY); if (!raw) return; try{ const parsed=JSON.parse(raw); state.profileName=parsed.profileName||"Homework Hero"; state.childPhoto=parsed.childPhoto||""; state.records=parsed.records||{}; state.debits=parsed.debits||[]; state.soundOn=parsed.soundOn ?? true; } catch(err){ console.error("Could not load saved data", err); } }
     function getRecordsArray(){ return Object.values(state.records).sort((a,b)=>a.date.localeCompare(b.date)); }
     function getDerived(){
       const recordsArray = getRecordsArray();
       const totalStars = recordsArray.reduce((sum,item)=>sum+(item.totalStars||item.stars||0),0);
       const creditedAmount = Math.floor(totalStars / 7) * 250;
+      const totalDebitedAmount = state.debits.reduce((sum,item)=>sum+(Number(item.amount)||0),0);
+      const bankBalance = Math.max(0, creditedAmount - totalDebitedAmount);
+      const sortedDebits = [...state.debits].sort((a,b)=>(a.date||"").localeCompare(b.date||"") || (a.createdAt||"").localeCompare(b.createdAt||""));
+      const debitsByDate = state.debits.reduce((acc,item)=>{ if (!acc[item.date]) acc[item.date]=[]; acc[item.date].push(item); return acc; },{});
+      const lastDebit = sortedDebits.length ? sortedDebits[sortedDebits.length - 1] : null;
+      const nextDebitEligibleDate = lastDebit ? addDaysToDateKey(lastDebit.date, 14) : null;
+      const debitCooldownActive = Boolean(nextDebitEligibleDate && state.selectedDate < nextDebitEligibleDate);
       const pendingStars = totalStars % 7;
       const permanentlyUnlockedCount = Math.min(avatarThemes.length - 1, Math.floor(creditedAmount / 250));
       const weeklyBuckets = {};
@@ -268,6 +277,7 @@
       const previewResult = calculateStars(state.form);
       const calendarDays = getCalendarDays(state.currentMonth);
       const rewardProgress = Math.min(creditedAmount, 10000);
+      const debitHelperText = bankBalance < 500 ? "Spend unlocks after at least ₹500 is available in the bank." : debitCooldownActive && nextDebitEligibleDate ? `Next debit unlocks on ${formatDate(nextDebitEligibleDate)}.` : "Debit is ready for this selected date.";
       let streak = 0;
       let cursor = new Date(todayKey() + "T00:00:00");
       while (true){
@@ -275,7 +285,7 @@
         const entry = state.records[key];
         if (entry && (entry.totalStars||entry.stars||0) > 0){ streak += 1; cursor.setDate(cursor.getDate()-1); } else break;
       }
-      return { recordsArray,totalStars,creditedAmount,pendingStars,permanentlyUnlockedCount,weeklyData,thisWeekStars,previousWeekStars,trendDown,activeUnlockedCount,activeTheme,monthStars,weekStars,completionRate,projectedNextCredit,previewResult,calendarDays,rewardProgress,streak };
+      return { recordsArray,totalStars,creditedAmount,totalDebitedAmount,bankBalance,sortedDebits,debitsByDate,lastDebit,nextDebitEligibleDate,debitCooldownActive,debitHelperText,pendingStars,permanentlyUnlockedCount,weeklyData,thisWeekStars,previousWeekStars,trendDown,activeUnlockedCount,activeTheme,monthStars,weekStars,completionRate,projectedNextCredit,previewResult,calendarDays,rewardProgress,streak };
     }
     function escapeHtml(str){ return String(str).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;"); }
     function avatarCard(theme, title, subtitle, active, locked){
@@ -318,7 +328,7 @@
       const avatars = avatarThemes.map((theme,index)=>{ const isBase=index===0; const unlocked=isBase||index<=d.permanentlyUnlockedCount; const active=index===Math.min(d.activeUnlockedCount,avatarThemes.length-1); return avatarCard(theme, theme.name, theme.badge, active&&unlocked, !unlocked); }).join("");
       const reasons = d.previewResult.reasons.map((r)=>`<div class="reason">${escapeHtml(r)}</div>`).join("");
       const days = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"].map((day)=>`<div>${day}</div>`).join("");
-      const calendar = d.calendarDays.map((date)=>{ const key=dateKeyFromDate(date); const inCurrentMonth=date.getMonth()===state.currentMonth.getMonth(); const entry=state.records[key]; const stars=entry?(entry.totalStars||entry.stars||0):0; return `<button class="day-card ${inCurrentMonth?"":"outside"} ${key===state.selectedDate?"selected":""}" data-day="${key}"><div class="day-top"><span class="day-num">${date.getDate()}</span>${entry?`<span class="star-pill ${toneClass(stars)}">${stars}★</span>`:""}</div>${entry?`<div class="tiny" style="margin-top:12px;color:${inCurrentMonth?'#64748b':'#94a3b8'}"><div>${entry.duration} min</div><div style="margin-top:4px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">${escapeHtml(entry.notes||"Mission saved")}</div></div>`:`<div class="tiny" style="margin-top:12px;">No entry</div>`}</button>`; }).join("");
+      const calendar = d.calendarDays.map((date)=>{ const key=dateKeyFromDate(date); const inCurrentMonth=date.getMonth()===state.currentMonth.getMonth(); const entry=state.records[key]; const dayDebits=d.debitsByDate[key]||[]; const debitTotalForDay=dayDebits.reduce((sum,item)=>sum+(Number(item.amount)||0),0); const stars=entry?(entry.totalStars||entry.stars||0):0; return `<button class="day-card ${inCurrentMonth?"":"outside"} ${key===state.selectedDate?"selected":""}" data-day="${key}"><div class="day-top"><span class="day-num">${date.getDate()}</span><div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">${entry?`<span class="star-pill ${toneClass(stars)}">${stars}★</span>`:""}${dayDebits.length?`<span class="star-pill" style="background:#e0f2fe;color:#075985;border-color:#bae6fd;">-₹${debitTotalForDay}</span>`:""}</div></div>${entry||dayDebits.length?`<div class="tiny" style="margin-top:12px;color:${inCurrentMonth?'#64748b':'#94a3b8'}">${entry?`<div>${entry.duration} min</div><div style="margin-top:4px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">${escapeHtml(entry.notes||"Mission saved")}</div>`:""}${dayDebits.length?`<div style="margin-top:${entry?6:0}px;color:#0369a1;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">Debit: ₹${debitTotalForDay} • ${escapeHtml(dayDebits[0].purchaseNote)}${dayDebits.length>1?` +${dayDebits.length-1} more`:""}</div>`:""}</div>`:`<div class="tiny" style="margin-top:12px;">No entry</div>`}</button>`; }).join("");
       app.innerHTML = `
         ${renderCelebration()}
         <div class="grid top-grid">
@@ -348,8 +358,9 @@
         </div>
         <div class="grid stats-grid" style="margin-top:20px;">
           ${scoreCard("Total stars", String(d.totalStars), "Homework stars plus daily habit bonus stars", true)}
-          ${scoreCard("Wallet balance", `₹${d.creditedAmount}`, "Credited only in blocks of 7 stars", true)}
-          ${scoreCard("Star bank", `${d.pendingStars} / 7`, "Saved toward the next ₹250", false)}
+          ${scoreCard("Bank balance", `₹${d.bankBalance}`, "Current amount left after debits", true)}
+          ${scoreCard("Total earned", `₹${d.creditedAmount}`, "Earned from 7-star credit blocks", false)}
+          ${scoreCard("Next debit", d.debitCooldownActive && d.nextDebitEligibleDate ? formatDate(d.nextDebitEligibleDate) : "Ready", "Only one debit is allowed every 14 days", false)}
           ${scoreCard("This week", String(d.weekStars), "Stars earned since Monday", false)}
           ${scoreCard("Strong days", `${d.completionRate}%`, "Days with 6 or more stars", false)}
           ${scoreCard("Streak", `${d.streak} days`, "Consecutive star-earning days", false)}
@@ -372,9 +383,22 @@
             </div>
           </div>
           <div class="card">
-            <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;"><div><div class="section-title" style="font-size:24px;">Rewards and character unlocks</div><div class="section-sub">Keep earning to unlock more fun choices.</div></div><div class="badge ok" style="font-size:12px;">₹${d.creditedAmount}</div></div>
+            <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;"><div><div class="section-title" style="font-size:24px;">Rewards and character unlocks</div><div class="section-sub">Keep earning to unlock more fun choices.</div></div><div class="badge ok" style="font-size:12px;">₹${d.bankBalance} in bank</div></div>
             <div class="reward-grid">${rewards}</div>
             <div class="progress-box">${progressMeter(d.rewardProgress,10000,"Progress to the ₹10000 Legend Reward")}</div>
+            <div class="info-box" style="background:linear-gradient(135deg,#ecfdf5,#e0f2fe);margin-top:18px;">
+              <div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap;"><div><div style="font-size:18px;font-weight:900;color:#0f172a;">Spend from bank</div><div class="section-sub" style="margin-top:4px;">Money can be debited only after the bank reaches ₹500, and then only once every 14 days.</div></div><div class="badge" style="background:white;color:#047857;border-color:#bbf7d0;">₹${d.bankBalance} available</div></div>
+              <div class="form-grid" style="margin-top:14px;">
+                <div><label class="title">Debit amount</label><input id="spendAmountInput" type="number" min="1" max="${Math.max(d.bankBalance,1)}" value="${escapeHtml(String(state.spendForm.amount ?? 500))}" /></div>
+                <div><label class="title">What was purchased</label><input id="purchaseNoteInput" type="text" value="${escapeHtml(state.spendForm.purchaseNote||"")}" placeholder="Toy car, book, puzzle, crayons" /></div>
+              </div>
+              <div style="margin-top:14px;display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;"><div class="tiny" style="font-size:13px;">${escapeHtml(d.debitHelperText)}</div><button id="debitBtn" class="action-btn" ${d.bankBalance < 500 || d.debitCooldownActive ? 'disabled style="opacity:.5;cursor:not-allowed;"' : ''}>Debit from bank</button></div>
+              <div class="reason-list" style="margin-top:14px;">
+                <div class="reason-pill">Selected debit date: ${formatDate(state.selectedDate)}</div>
+                <div class="reason-pill">Total spent so far: ₹${d.totalDebitedAmount}</div>
+                ${d.sortedDebits.length ? d.sortedDebits.slice(-3).reverse().map((item)=>`<div class="reason-pill">${formatDate(item.date)} • -₹${item.amount} • ${escapeHtml(item.purchaseNote)}</div>`).join("") : `<div class="reason-pill" style="color:#64748b;">No debit entries yet.</div>`}
+              </div>
+            </div>
             <div class="trend-note ${d.trendDown?"trend-down":"trend-up"}">${d.trendDown ? "Weekly progress dipped, so one avatar level is hidden for now. Better progress brings it right back." : "Weekly progress is steady or improving. All unlocked avatar levels stay active."}</div>
             <div class="avatar-scroll"><div class="avatar-grid">${avatars}</div></div>
           </div>
@@ -444,8 +468,24 @@
       else if (result.totalStars>=6) triggerCelebration("Great job! Keep the streak going!","good");
       else { if (state.soundOn) playSound("save"); render(); }
     }
+    function handleDebit(){
+      const derived=getDerived();
+      const amount=Number(state.spendForm.amount);
+      const purchaseNote=(state.spendForm.purchaseNote||"").trim();
+      if (derived.bankBalance < 500){ state.lastSavedMessage="Spending unlocks only after at least ₹500 is available in the bank."; render(); return; }
+      if (derived.debitCooldownActive && derived.nextDebitEligibleDate){ state.lastSavedMessage=`Next debit is available on ${formatDate(derived.nextDebitEligibleDate)}.`; render(); return; }
+      if (!Number.isFinite(amount) || amount <= 0){ state.lastSavedMessage="Enter a valid debit amount."; render(); return; }
+      if (amount > derived.bankBalance){ state.lastSavedMessage=`Only ₹${derived.bankBalance} is available to spend right now.`; render(); return; }
+      if (!purchaseNote){ state.lastSavedMessage="Please add what was purchased before saving the debit."; render(); return; }
+      const debitEntry={ id:`${state.selectedDate}-${Date.now()}`, date:state.selectedDate, amount, purchaseNote, createdAt:new Date().toISOString() };
+      state.debits=[...state.debits, debitEntry];
+      state.spendForm={ ...defaultSpendForm };
+      state.lastSavedMessage=`Debited ₹${amount} on ${formatDate(state.selectedDate)} for ${purchaseNote}. Another debit can happen only after 14 days.`;
+      saveState();
+      triggerCelebration(`Spent ₹${amount} for ${purchaseNote}!`,"save");
+    }
     function exportBackup(){
-      const payload={ version:1, exportedAt:new Date().toISOString(), app:"homework-quest-html", data:{ profileName:state.profileName, childPhoto:state.childPhoto, records:state.records, soundOn:state.soundOn } };
+      const payload={ version:2, exportedAt:new Date().toISOString(), app:"homework-quest-html", data:{ profileName:state.profileName, childPhoto:state.childPhoto, records:state.records, debits:state.debits, soundOn:state.soundOn } };
       const blob=new Blob([JSON.stringify(payload,null,2)],{ type:"application/json" });
       const url=URL.createObjectURL(blob);
       const a=document.createElement("a");
@@ -460,7 +500,7 @@
     function importBackup(file){
       if (!file) return;
       const reader=new FileReader();
-      reader.onload=()=>{ try{ const parsed=JSON.parse(String(reader.result||"{}")); const data=parsed.data||parsed; if (typeof data!=="object" || data===null) throw new Error("Invalid backup format"); state.profileName=data.profileName||"Homework Hero"; state.childPhoto=data.childPhoto||""; state.records=data.records||{}; state.soundOn=data.soundOn ?? true; state.selectedDate=todayKey(); syncFormFromSelectedDate(); state.lastSavedMessage="Backup restored successfully."; saveState(); triggerCelebration("Backup restored successfully!","unlock"); } catch(err){ alert("That backup file could not be read. Please select a valid JSON backup."); console.error(err); } };
+      reader.onload=()=>{ try{ const parsed=JSON.parse(String(reader.result||"{}")); const data=parsed.data||parsed; if (typeof data!=="object" || data===null) throw new Error("Invalid backup format"); state.profileName=data.profileName||"Homework Hero"; state.childPhoto=data.childPhoto||""; state.records=data.records||{}; state.debits=data.debits||[]; state.soundOn=data.soundOn ?? true; state.selectedDate=todayKey(); state.spendForm={ ...defaultSpendForm }; syncFormFromSelectedDate(); state.lastSavedMessage="Backup restored successfully."; saveState(); triggerCelebration("Backup restored successfully!","unlock"); } catch(err){ alert("That backup file could not be read. Please select a valid JSON backup."); console.error(err); } };
       reader.readAsText(file);
     }
     async function compressImageFile(file){
@@ -479,7 +519,7 @@
     function resetAllData(){
       const confirmed=window.confirm("This will remove all saved stars, records, wallet progress, and the photo from this browser. Continue?");
       if (!confirmed) return;
-      state.profileName="Homework Hero"; state.childPhoto=""; state.records={}; state.soundOn=true; state.selectedDate=todayKey(); state.currentMonth=new Date(); state.lastSavedMessage=""; state.form={ ...defaultForm }; saveState(); render();
+      state.profileName="Homework Hero"; state.childPhoto=""; state.records={}; state.debits=[]; state.soundOn=true; state.selectedDate=todayKey(); state.currentMonth=new Date(); state.lastSavedMessage=""; state.form={ ...defaultForm }; state.spendForm={ ...defaultSpendForm }; saveState(); render();
     }
     function bindEvents(){
       const profileNameInput=document.getElementById("profileNameInput");
@@ -495,8 +535,11 @@
       const selectedDateInput=document.getElementById("selectedDateInput"); if (selectedDateInput) selectedDateInput.addEventListener("change",(e)=>setSelectedDate(e.target.value));
       const durationInput=document.getElementById("durationInput"); if (durationInput) durationInput.addEventListener("input",(e)=>{ state.form.duration=e.target.value; render(); });
       const notesInput=document.getElementById("notesInput"); if (notesInput) notesInput.addEventListener("input",(e)=>{ state.form.notes=e.target.value; });
+      const spendAmountInput=document.getElementById("spendAmountInput"); if (spendAmountInput) spendAmountInput.addEventListener("input",(e)=>{ state.spendForm.amount=e.target.value; render(); });
+      const purchaseNoteInput=document.getElementById("purchaseNoteInput"); if (purchaseNoteInput) purchaseNoteInput.addEventListener("input",(e)=>{ state.spendForm.purchaseNote=e.target.value; });
       document.querySelectorAll("[data-toggle]").forEach((el)=>{ el.addEventListener("click",()=>{ const key=el.getAttribute("data-toggle"); state.form[key]=!state.form[key]; render(); }); });
       const saveBtn=document.getElementById("saveBtn"); if (saveBtn) saveBtn.addEventListener("click", handleSave);
+      const debitBtn=document.getElementById("debitBtn"); if (debitBtn) debitBtn.addEventListener("click", handleDebit);
       const monthPrevBtn=document.getElementById("monthPrevBtn"); if (monthPrevBtn) monthPrevBtn.addEventListener("click",()=>{ state.currentMonth=new Date(state.currentMonth.getFullYear(),state.currentMonth.getMonth()-1,1); render(); });
       const monthNextBtn=document.getElementById("monthNextBtn"); if (monthNextBtn) monthNextBtn.addEventListener("click",()=>{ state.currentMonth=new Date(state.currentMonth.getFullYear(),state.currentMonth.getMonth()+1,1); render(); });
       document.querySelectorAll("[data-day]").forEach((el)=>{ el.addEventListener("click",()=>setSelectedDate(el.getAttribute("data-day"))); });
