@@ -202,7 +202,7 @@
       { key:"noMessAllDay", label:"Did not create a mess all day", emoji:"🧼", positive:true },
       { key:"listenedToParents", label:"Said yes to mother and father", emoji:"🙌", positive:true }
     ];
-    let state = { profileName:"Homework Hero", childPhoto:"", records:{}, selectedDate:todayKey(), form:{ ...defaultForm }, currentMonth:new Date(), lastSavedMessage:"", soundOn:true, celebration:null };
+    let state = { profileName:"Avyaan Roblox Homework", childPhoto:"", records:{}, selectedDate:todayKey(), form:{ ...defaultForm }, currentMonth:new Date(), lastSavedMessage:"", soundOn:true, celebration:null };
     let weeklyChart = null;
 
     function dateKeyFromDate(date){ const y=date.getFullYear(); const m=String(date.getMonth()+1).padStart(2,"0"); const d=String(date.getDate()).padStart(2,"0"); return `${y}-${m}-${d}`; }
@@ -285,32 +285,7 @@
     function scoreCard(label, value, subvalue, glow){ return `<div class="stat ${glow?"glow":""}"><div class="stat-label">${escapeHtml(label)}</div><div class="stat-value">${escapeHtml(value)}</div>${subvalue?`<div class="stat-sub">${escapeHtml(subvalue)}</div>`:""}</div>`; }
     function progressMeter(value, max, label){ const percent=Math.max(0,Math.min(100,(value/max)*100)); return `<div><div class="meter-head"><span style="font-weight:800;color:#334155">${escapeHtml(label)}</span><span class="muted">${value} / ${max}</span></div><div class="meter-track"><div class="meter-fill" style="width:${percent}%"></div></div></div>`; }
     function renderCelebration(){ if (!state.celebration) return ""; let stars=""; for (let i=0;i<12;i++){ const x=(i%2===0?-1:1)*(16+i*3); const r=i*24; stars += `<div class="burst-star" style="--x:${x}px;--r:${r}deg;animation-delay:${i*0.03}s;">⭐</div>`; } return `<div class="celebration"><div class="starburst">${stars}</div><div style="position:relative;z-index:1"><div style="font-size:32px;">🎉</div><h3>${escapeHtml(state.celebration.message)}</h3></div></div>`; }
-    function captureFocusState(){
-      const active = document.activeElement;
-      if (!active || !active.id) return null;
-      const tag = active.tagName;
-      const inputType = active.type || "";
-      const supportsSelection = tag === "TEXTAREA" || (tag === "INPUT" && !["file", "checkbox", "radio", "button", "submit"].includes(inputType));
-      return {
-        id: active.id,
-        selectionStart: supportsSelection && typeof active.selectionStart === "number" ? active.selectionStart : null,
-        selectionEnd: supportsSelection && typeof active.selectionEnd === "number" ? active.selectionEnd : null,
-      };
-    }
-    function restoreFocusState(focusState){
-      if (!focusState || !focusState.id) return;
-      const target = document.getElementById(focusState.id);
-      if (!target) return;
-      target.focus({ preventScroll:true });
-      if (focusState.selectionStart !== null && typeof target.setSelectionRange === "function") {
-        const valueLength = typeof target.value === "string" ? target.value.length : 0;
-        const start = Math.min(focusState.selectionStart, valueLength);
-        const end = Math.min(focusState.selectionEnd ?? focusState.selectionStart, valueLength);
-        try { target.setSelectionRange(start, end); } catch (error) {}
-      }
-    }
     function render(){
-      const focusState = captureFocusState();
       const d = getDerived();
       const app = document.getElementById("app");
       const toggles = toggleDefinitions.map((t)=>`<div class="toggle ${state.form[t.key]?"active":""} ${t.positive?"positive":"negative"}" data-toggle="${t.key}"><div class="toggle-left"><div class="emoji-badge">${t.emoji}</div><span class="label">${escapeHtml(t.label)}</span></div><div class="switch"></div></div>`).join("");
@@ -326,7 +301,7 @@
             <div class="hero-wrap">
               <div>
                 <div class="hero-sub">Kid Homework Quest</div>
-                <h1>${escapeHtml(state.profileName || "Homework Hero")}</h1>
+                <h1>${escapeHtml(state.profileName)}</h1>
                 <p>A playful reward app with stars, sounds, celebration popups, bonus behavior points, unlockable brainrot characters, weekly chart, calendar tracking, and backup restore.</p>
                 <div><span class="pill">📱 GitHub Pages ready</span><span class="pill">🎵 Sound effects</span><span class="pill">🎉 Celebration animations</span><span class="pill">💾 Export + import backup</span></div>
               </div>
@@ -339,7 +314,7 @@
           <div class="card">
             <div style="font-size:20px;font-weight:900;">Profile and thumbnail</div>
             <div class="profile-grid" style="margin-top:16px;">
-              <div><label class="title">Child name</label><input id="profileNameInput" type="text" value="${escapeHtml(state.profileName)}" placeholder="Enter name" autocomplete="off" /></div>
+              <div><label class="title">Child name</label><input id="profileNameInput" type="text" value="${escapeHtml(state.profileName)}" placeholder="Enter name" /></div>
               <div><label class="title">Upload face photo</label><input id="photoInput" type="file" accept="image/*" /><div class="upload-note">The face photo is placed on the blocky character skin so the thumbnail looks personal and game-like.</div></div>
               <div class="info-box"><div style="font-size:14px;font-weight:800;color:#334155;">Next ₹250 character unlock</div><div style="margin-top:10px;">${progressMeter(d.pendingStars,7,"Star bank progress")}</div><div class="tiny" style="margin-top:12px;">${d.projectedNextCredit} more stars needed for the next ₹250 credit.</div></div>
               <div class="toolbar"><button id="exportBtn" class="action-btn primary">Export backup</button><button id="importBtn" class="action-btn">Import backup</button><button id="resetBtn" class="action-btn">Reset all data</button></div>
@@ -402,7 +377,6 @@
         <div class="bottom-nav"><div class="nav-item active"><div class="icon">🏠</div>Home</div><div class="nav-item"><div class="icon">⭐</div>Stars</div><div class="nav-item"><div class="icon">🎁</div>Rewards</div><div class="nav-item"><div class="icon">📅</div>Calendar</div></div>
       `;
       bindEvents();
-      restoreFocusState(focusState);
       renderChart(d.weeklyData);
     }
     function renderChart(weeklyData){
@@ -483,7 +457,7 @@
     }
     function bindEvents(){
       const profileNameInput=document.getElementById("profileNameInput");
-      if (profileNameInput) profileNameInput.addEventListener("input",(e)=>{ state.profileName=e.target.value; saveState(); render(); });
+      if (profileNameInput) profileNameInput.addEventListener("input",(e)=>{ state.profileName=e.target.value||"Homework Hero"; saveState(); render(); });
       const photoInput=document.getElementById("photoInput");
       if (photoInput) photoInput.addEventListener("change", async (e)=>{ const file=e.target.files&&e.target.files[0]; if (!file) return; try{ state.childPhoto=await compressImageFile(file); saveState(); triggerCelebration("Photo added to the blocky character!","good"); } catch(err){ alert("Could not process that image. Please try another one."); console.error(err); } });
       const soundToggleBtn=document.getElementById("soundToggleBtn");
