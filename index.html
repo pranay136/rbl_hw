@@ -152,6 +152,17 @@
   <input type="file" id="backupImportInput" class="hidden" accept="application/json,.json" />
   <script>
     const STORAGE_KEY = "homework-star-tracker-html-v1";
+    const feelingOptions = [
+      { value:"happy", label:"Happy", emoji:"😊" },
+      { value:"excited", label:"Excited", emoji:"🤩" },
+      { value:"calm", label:"Calm", emoji:"😌" },
+      { value:"proud", label:"Proud", emoji:"😎" },
+      { value:"tired", label:"Tired", emoji:"😴" },
+      { value:"sad", label:"Sad", emoji:"😔" },
+      { value:"angry", label:"Angry", emoji:"😠" },
+      { value:"worried", label:"Worried", emoji:"😟" }
+    ];
+    const feelingMap = Object.fromEntries(feelingOptions.map((item)=>[item.value,item]));
     const characterNameSeeds = ["Tralalero Tralala","Nubini Kekini","Agarrini la Palini","Alessio","Anpali Babel","Antonio","Aquanaut","Arachnid Family","Arcadopus","Avocadini Antilopini","Avocadini Guffo","Avocadorilla","Ay Mi Gatito","Bacuru and Egguru","Ballerina Cappuccina","Ballerina Peppermintina","Ballerino Lololo","Bambini Crostini","Bambu Bambu Sahur","Bananita Dolphinita","Bananito Bandito","Bandito Axolito","Bandito Bobritto","Belula Beluga","Bicicleteira Family","Bisonte Giuppitere","Blackhole Goat","Blueberrinni Octopusini","Boatito Auratito","Boba Panda","Bombardini Tortinii","Bombardiro Crocodilo","Bombombini Gusini","Boneca Ambalabu","Brainrot God","Brasilini Berimbini","Brr Brr Patapim","Brr es Teh Patipum","Brri Brri Bicus Dicus Bombicus","Brunito Marsito","Brutto Gialutto","Buho de Fuego","Buho de Noelo","Bulbito Bandito Traktorito","Bunito Bunito Spinito","Bunnyman","Burbaloni Loliloli","Burguro and Fryuro","Burrito Bandito","Cacasito Satalito","Cachorrito Melonito","Cacto Hipopotamo","Capi Taco","Capitano Moby","Cappuccino Assassino","Cappuccino Clownino","Caramello Filtrello","Carloo","Carrotini Brainini","Cavallo Virtuoso","Celularcini Viciosini","Centrucci Nuclucci","Cerberus","Chachechi","Chef Crabracadabra","Chicleteira Bicicleteira","Chicleteira Noelteira","Chicleteirina Bicicleteirina","Chihuanini Taconini","Chill Puppy","Chillin Chili","Chimnino","Chimpanzini Bananini","Chimpanzini Spiderini","Chipso and Queso","Chocco Bunny","Chrismasmamat","Clickerino Crabo","Cocoa Assassino","Cocofanto Elefanto","Cocosini Mama","Coffin Tung Tung Tung Sahur","Cooki and Milki","Corn Corn Corn Sahur","Crabbo Limonetta","Cuadramat and Pakrahmatmamat","Cupcake Koala","Developini Braziliaspidini","Doi Doi Do","Dolphini Jetskini","Donkeyturbo Express","Dragon Cannelloni","Dragon Family","Dragon Gingerini","Dug dug dug","Dul Dul Dul","Elefanto Frigo","Esok Sekolah","Espresso Signora","Eviledon","Extinct Ballerina","Extinct Matteo","Extinct Tralalero","Festive 67","Festive Lucky Block","Fishino Clownino","Fizzy Soda","Fluriflura","Fragola La La La","Fragrama and Chocrama","Frankentteo","Frigo Camelo","Frio Ninja","Frogato Pirato","Frogo Elfo","Ganganzelli Trulala","Gangster Footera","Garama and Madundung","Gattatino Neonino","Gattatino Nyanino","Gattito Tacoto","Giftini Spyderini","Ginger Cisterna","Ginger Gerat","Ginger Globo","Girafa Celestre","Glorbo Fruttodrillo","GOAT","Gobblino Uniciclino","Gold Elf","Gorillo Subwoofero","Gorillo Watermelondrillo","Graipuss Medussi","Granchiello Spiritell","Guerriro Digitale","Guest 666","Headless Horseman","Ho Ho Ho Sahur","Horegini Boom","Hydra Dragon Cannelloni","Ice Dragon","Jacko Jack Jack","Jacko Spaventosa","Jackorilla","Jingle Jingle Sahur","Job Job Job Sahur","John Pork","Jolly Jolly Sahur","Karker Sahur","Karkerkar Kurkur","Karkerkur Family","Ketchuru and Musturu","Ketupat Bros","Ketupat Kepat","Kings Coleslaw","Krupuk Pagi Pagi","La Casa Boo","La Cucaracha","La Extinct Grande","La Ginger Sekolah","La Grande Combinasion","La Jolly Grande","La Karkerkar Combinasion","La Sahur Combinasion","La Secret Combinasion","La Spooky Grande","La Supreme Combinasion","La Taco Combinasion","La Vacca Jacko Linterino","La Vacca Saturno Saturnita","Las Capuchinas","Las Sis","Las Tralaleritas","Las Vaquitas Saturnitas","Lavadorito Spinito","Lerulerulerule","Lionel Cactuseli","Lirilì Larilà","List List List Sahur","Los 25","Los 67","Los Bombinitos","Los Bros","Los Candies","Los Chicleteiras","Los Chihuaninis","Los Combinasionas","Los Crocodillitos"];
     const accessorySeeds = ["🦈","⚡","🐊","🩰","🥁","☕","⛏️","🧱","💚","☁️","🟣","🦖","🐉","🔥","🪽","🧂","🍓","🍔","🍟","🎃","🥛","🧀","🍫","🍀","🏮","🗡️","🧸","🧊","🥥","🚽","🐼","🕷️","🐙","🦌","🚲","🌌","🐐","🪐","🍌","🦎"];
     const paletteSeeds = [
@@ -185,7 +196,7 @@
       { amount:7500, title:"Mega Champion", detail:"Unlock a mega celebration and special badge.", emoji:"🏆" },
       { amount:10000, title:"Legend Reward", detail:"Unlock the final legendary reward tier.", emoji:"👑" }
     ];
-    const defaultForm = { duration:30, completedHomework:true, stayedInOnePlace:true, gotUp:false, talked:false, tookBreak:false, focused:true, goodBehavior:false, noComplaint:false, selfPlayHour:false, constructivePlayHour:false, bathAndBrush:false, goodBehaviorAtHome:false, noMessAllDay:false, listenedToParents:false, notes:"" };
+    const defaultForm = { duration:30, completedHomework:true, stayedInOnePlace:true, gotUp:false, talked:false, tookBreak:false, focused:true, goodBehavior:false, noComplaint:false, selfPlayHour:false, constructivePlayHour:false, bathAndBrush:false, goodHandwritingAllDay:false, noMessAllDay:false, listenedToParents:false, feeling:"happy", bestThing:"", notes:"" };
     const defaultSpendForm = { amount:500, purchaseNote:"" };
     const toggleDefinitions = [
       { key:"completedHomework", label:"Homework fully completed", emoji:"✅", positive:true },
@@ -199,7 +210,7 @@
       { key:"selfPlayHour", label:"1 hour of self-play", emoji:"🧩", positive:true },
       { key:"constructivePlayHour", label:"1 hour of constructive play", emoji:"🛠️", positive:true },
       { key:"bathAndBrush", label:"Took bath and brushed nicely", emoji:"🛁", positive:true },
-      { key:"goodBehaviorAtHome", label:"Good behavior at home", emoji:"🏠", positive:true },
+      { key:"goodHandwritingAllDay", label:"Good handwriting all day", emoji:"✍️", positive:true },
       { key:"noMessAllDay", label:"Did not create a mess all day", emoji:"🧼", positive:true },
       { key:"listenedToParents", label:"Said yes to mother and father", emoji:"🙌", positive:true }
     ];
@@ -231,7 +242,7 @@
       if (entry.selfPlayHour){ bonusStars += 1; bonusReasons.push("1 hour of self-play"); }
       if (entry.constructivePlayHour){ bonusStars += 1; bonusReasons.push("1 hour of constructive play"); }
       if (entry.bathAndBrush){ bonusStars += 1; bonusReasons.push("bath and brushing nicely"); }
-      if (entry.goodBehaviorAtHome){ bonusStars += 1; bonusReasons.push("good behavior at home"); }
+      if (entry.goodHandwritingAllDay){ bonusStars += 1; bonusReasons.push("good handwriting all day"); }
       if (entry.noMessAllDay){ bonusStars += 1; bonusReasons.push("no mess throughout the day"); }
       if (entry.listenedToParents){ bonusStars += 1; bonusReasons.push("listened to mother and father"); }
       if (bonusStars > 0){ reasons.push(`Bonus stars earned: ${bonusStars}.`); reasons.push(`Bonus sources: ${bonusReasons.join(", ")}.`); }
@@ -244,13 +255,75 @@
     function weekLabelFromDate(dateKey){ const start=getWeekStart(dateKey); const end=new Date(start); end.setDate(start.getDate()+6); return `${start.toLocaleDateString(undefined,{ month:"short", day:"numeric" })} - ${end.toLocaleDateString(undefined,{ month:"short", day:"numeric" })}`; }
     function getCalendarDays(currentMonth){ const y=currentMonth.getFullYear(); const m=currentMonth.getMonth(); const first=new Date(y,m,1); const last=new Date(y,m+1,0); const start=new Date(first); const startDay=start.getDay(); const mondayShift=startDay===0?6:startDay-1; start.setDate(start.getDate()-mondayShift); const end=new Date(last); const endDay=end.getDay(); const sundayShift=endDay===0?0:7-endDay; end.setDate(end.getDate()+sundayShift); const days=[]; const cursor=new Date(start); while (cursor<=end){ days.push(new Date(cursor)); cursor.setDate(cursor.getDate()+1);} return days; }
     function toneClass(stars){ if (stars >= 8) return "tone-high"; if (stars >= 5) return "tone-mid"; if (stars >= 1) return "tone-low"; return "tone-zero"; }
-    function saveState(){ localStorage.setItem(STORAGE_KEY, JSON.stringify({ version:2, profileName:state.profileName, childPhoto:state.childPhoto, records:state.records, debits:state.debits, soundOn:state.soundOn })); }
+    function saveState(){ localStorage.setItem(STORAGE_KEY, JSON.stringify({ version:3, profileName:state.profileName, childPhoto:state.childPhoto, records:state.records, debits:state.debits, soundOn:state.soundOn })); }
     function loadState(){ const raw=localStorage.getItem(STORAGE_KEY); if (!raw) return; try{ const parsed=JSON.parse(raw); state.profileName=parsed.profileName||"Homework Hero"; state.childPhoto=parsed.childPhoto||""; state.records=parsed.records||{}; state.debits=parsed.debits||[]; state.soundOn=parsed.soundOn ?? true; } catch(err){ console.error("Could not load saved data", err); } }
     function getRecordsArray(){ return Object.values(state.records).sort((a,b)=>a.date.localeCompare(b.date)); }
+
+    function getLatestTimelineDate(){
+      const keys = [...Object.keys(state.records), ...state.debits.map((item)=>item.date)].filter(Boolean).sort();
+      const latest = keys.length ? keys[keys.length - 1] : todayKey();
+      return latest > todayKey() ? latest : todayKey();
+    }
+    function buildCreditLedger(untilDateKey = getLatestTimelineDate()){
+      const recordEntries = getRecordsArray();
+      const baseCredits = [];
+      let cumulativeStars = 0;
+      let rewardBlocks = 0;
+      for (const item of recordEntries){
+        cumulativeStars += item.totalStars || item.stars || 0;
+        const nextBlocks = Math.floor(cumulativeStars / 7);
+        const gained = nextBlocks - rewardBlocks;
+        if (gained > 0){
+          baseCredits.push({ id:`stars-${item.date}-${nextBlocks}`, date:item.date, amount:gained * 250, type:"stars", note:`${gained} reward block${gained===1?"":"s"}` });
+          rewardBlocks = nextBlocks;
+        }
+      }
+      const baseCreditMap = {};
+      baseCredits.forEach((item)=>{ if (!baseCreditMap[item.date]) baseCreditMap[item.date]=[]; baseCreditMap[item.date].push(item); });
+      const debitMap = {};
+      state.debits.forEach((item)=>{ if (!debitMap[item.date]) debitMap[item.date]=[]; debitMap[item.date].push(item); });
+      const allKnownDates = [...Object.keys(state.records), ...Object.keys(debitMap)].filter(Boolean).sort();
+      const startDateKey = allKnownDates.length ? allKnownDates[0] : todayKey();
+      const endDateKey = untilDateKey || startDateKey;
+      const autoCredits = [];
+      let cursor = new Date(startDateKey + "T00:00:00");
+      const end = new Date(endDateKey + "T00:00:00");
+      let bank = 0;
+      let goodBehaviorStreak = 0;
+      while (cursor <= end){
+        const key = dateKeyFromDate(cursor);
+        const entry = state.records[key];
+        const starCreditsToday = baseCreditMap[key] || [];
+        starCreditsToday.forEach((credit)=>{ bank += Number(credit.amount) || 0; });
+        if (entry && entry.goodBehavior){
+          goodBehaviorStreak += 1;
+          if (goodBehaviorStreak % 10 === 0){
+            const bonus = { id:`streak-${key}-${goodBehaviorStreak}`, date:key, amount:200, type:"streak", note:`10-day good behavior streak reward` };
+            autoCredits.push(bonus);
+            bank += bonus.amount;
+          }
+        } else {
+          goodBehaviorStreak = 0;
+        }
+        const debitsToday = debitMap[key] || [];
+        debitsToday.forEach((debit)=>{ bank -= Number(debit.amount) || 0; });
+        if (cursor.getDay() === 0 && bank > 1000){
+          const interestAmount = Math.round(bank * 0.10);
+          const interest = { id:`interest-${key}`, date:key, amount:interestAmount, type:"interest", note:`10% Sunday interest` };
+          autoCredits.push(interest);
+          bank += interest.amount;
+        }
+        cursor.setDate(cursor.getDate() + 1);
+      }
+      const credits = [...baseCredits, ...autoCredits].sort((a,b)=>(a.date||"").localeCompare(b.date||"") || (a.id||"").localeCompare(b.id||""));
+      const creditsByDate = credits.reduce((acc,item)=>{ if (!acc[item.date]) acc[item.date]=[]; acc[item.date].push(item); return acc; }, {});
+      return { credits, creditsByDate, baseCredits, autoCredits };
+    }
     function getDerived(){
       const recordsArray = getRecordsArray();
       const totalStars = recordsArray.reduce((sum,item)=>sum+(item.totalStars||item.stars||0),0);
-      const creditedAmount = Math.floor(totalStars / 7) * 250;
+      const ledger = buildCreditLedger();
+      const creditedAmount = ledger.credits.reduce((sum,item)=>sum+(Number(item.amount)||0),0);
       const totalDebitedAmount = state.debits.reduce((sum,item)=>sum+(Number(item.amount)||0),0);
       const bankBalance = Math.max(0, creditedAmount - totalDebitedAmount);
       const sortedDebits = [...state.debits].sort((a,b)=>(a.date||"").localeCompare(b.date||"") || (a.createdAt||"").localeCompare(b.createdAt||""));
@@ -285,7 +358,7 @@
         const entry = state.records[key];
         if (entry && (entry.totalStars||entry.stars||0) > 0){ streak += 1; cursor.setDate(cursor.getDate()-1); } else break;
       }
-      return { recordsArray,totalStars,creditedAmount,totalDebitedAmount,bankBalance,sortedDebits,debitsByDate,lastDebit,nextDebitEligibleDate,debitCooldownActive,debitHelperText,pendingStars,permanentlyUnlockedCount,weeklyData,thisWeekStars,previousWeekStars,trendDown,activeUnlockedCount,activeTheme,monthStars,weekStars,completionRate,projectedNextCredit,previewResult,calendarDays,rewardProgress,streak };
+      return { recordsArray,totalStars,creditedAmount,totalDebitedAmount,bankBalance,sortedDebits,debitsByDate,credits:ledger.credits,creditsByDate:ledger.creditsByDate,lastDebit,nextDebitEligibleDate,debitCooldownActive,debitHelperText,pendingStars,permanentlyUnlockedCount,weeklyData,thisWeekStars,previousWeekStars,trendDown,activeUnlockedCount,activeTheme,monthStars,weekStars,completionRate,projectedNextCredit,previewResult,calendarDays,rewardProgress,streak };
     }
     function escapeHtml(str){ return String(str).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;"); }
     function avatarCard(theme, title, subtitle, active, locked){
@@ -328,7 +401,7 @@
       const avatars = avatarThemes.map((theme,index)=>{ const isBase=index===0; const unlocked=isBase||index<=d.permanentlyUnlockedCount; const active=index===Math.min(d.activeUnlockedCount,avatarThemes.length-1); return avatarCard(theme, theme.name, theme.badge, active&&unlocked, !unlocked); }).join("");
       const reasons = d.previewResult.reasons.map((r)=>`<div class="reason">${escapeHtml(r)}</div>`).join("");
       const days = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"].map((day)=>`<div>${day}</div>`).join("");
-      const calendar = d.calendarDays.map((date)=>{ const key=dateKeyFromDate(date); const inCurrentMonth=date.getMonth()===state.currentMonth.getMonth(); const entry=state.records[key]; const dayDebits=d.debitsByDate[key]||[]; const debitTotalForDay=dayDebits.reduce((sum,item)=>sum+(Number(item.amount)||0),0); const stars=entry?(entry.totalStars||entry.stars||0):0; return `<button class="day-card ${inCurrentMonth?"":"outside"} ${key===state.selectedDate?"selected":""}" data-day="${key}"><div class="day-top"><span class="day-num">${date.getDate()}</span><div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">${entry?`<span class="star-pill ${toneClass(stars)}">${stars}★</span>`:""}${dayDebits.length?`<span class="star-pill" style="background:#e0f2fe;color:#075985;border-color:#bae6fd;">-₹${debitTotalForDay}</span>`:""}</div></div>${entry||dayDebits.length?`<div class="tiny" style="margin-top:12px;color:${inCurrentMonth?'#64748b':'#94a3b8'}">${entry?`<div>${entry.duration} min</div><div style="margin-top:4px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">${escapeHtml(entry.notes||"Mission saved")}</div>`:""}${dayDebits.length?`<div style="margin-top:${entry?6:0}px;color:#0369a1;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">Debit: ₹${debitTotalForDay} • ${escapeHtml(dayDebits[0].purchaseNote)}${dayDebits.length>1?` +${dayDebits.length-1} more`:""}</div>`:""}</div>`:`<div class="tiny" style="margin-top:12px;">No entry</div>`}</button>`; }).join("");
+      const calendar = d.calendarDays.map((date)=>{ const key=dateKeyFromDate(date); const inCurrentMonth=date.getMonth()===state.currentMonth.getMonth(); const entry=state.records[key]; const dayDebits=d.debitsByDate[key]||[]; const debitTotalForDay=dayDebits.reduce((sum,item)=>sum+(Number(item.amount)||0),0); const dayCredits=d.creditsByDate[key]||[]; const creditTotalForDay=dayCredits.reduce((sum,item)=>sum+(Number(item.amount)||0),0); const stars=entry?(entry.totalStars||entry.stars||0):0; const feeling = entry && entry.feeling ? feelingMap[entry.feeling] : null; return `<button class="day-card ${inCurrentMonth?"":"outside"} ${key===state.selectedDate?"selected":""}" data-day="${key}"><div class="day-top"><span class="day-num">${date.getDate()}</span><div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">${entry?`<span class="star-pill ${toneClass(stars)}">${stars}★</span>`:""}${dayDebits.length?`<span class="star-pill" style="background:#e0f2fe;color:#075985;border-color:#bae6fd;">-₹${debitTotalForDay}</span>`:""}${dayCredits.length?`<span class="star-pill" style="background:#dcfce7;color:#166534;border-color:#bbf7d0;">+₹${creditTotalForDay}</span>`:""}</div></div>${entry||dayDebits.length||dayCredits.length?`<div class="tiny" style="margin-top:12px;color:${inCurrentMonth?'#64748b':'#94a3b8'}">${entry?`<div>${entry.duration} min ${feeling?`• ${feeling.emoji} ${escapeHtml(feeling.label)}`:""}</div>`:""}${entry&&entry.notes?`<div style="margin-top:4px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">${escapeHtml(entry.notes)}</div>`:""}${entry&&entry.bestThing?`<div style="margin-top:4px;color:#7c3aed;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">Best: ${escapeHtml(entry.bestThing)}</div>`:""}${dayDebits.length?`<div style="margin-top:${entry||entry&&entry.bestThing?6:0}px;color:#0369a1;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">Debit: ₹${debitTotalForDay} • ${escapeHtml(dayDebits[0].purchaseNote)}${dayDebits.length>1?` +${dayDebits.length-1} more`:""}</div>`:""}${dayCredits.length?`<div style="margin-top:${dayDebits.length||entry?6:0}px;color:#166534;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">Credit: ₹${creditTotalForDay} • ${escapeHtml(dayCredits[0].type==="interest"?"Sunday interest":dayCredits[0].type==="streak"?"10-day streak bonus":dayCredits[0].note||"Reward")}${dayCredits.length>1?` +${dayCredits.length-1} more`:""}</div>`:""}</div>`:`<div class="tiny" style="margin-top:12px;">No entry</div>`}</button>`; }).join("");
       app.innerHTML = `
         ${renderCelebration()}
         <div class="grid top-grid">
@@ -359,7 +432,7 @@
         <div class="grid stats-grid" style="margin-top:20px;">
           ${scoreCard("Total stars", String(d.totalStars), "Homework stars plus daily habit bonus stars", true)}
           ${scoreCard("Bank balance", `₹${d.bankBalance}`, "Current amount left after debits", true)}
-          ${scoreCard("Total earned", `₹${d.creditedAmount}`, "Earned from 7-star credit blocks", false)}
+          ${scoreCard("Total earned", `₹${d.creditedAmount}`, "Stars + Sunday interest + streak bonuses", false)}
           ${scoreCard("Next debit", d.debitCooldownActive && d.nextDebitEligibleDate ? formatDate(d.nextDebitEligibleDate) : "Ready", "Only one debit is allowed every 14 days", false)}
           ${scoreCard("This week", String(d.weekStars), "Stars earned since Monday", false)}
           ${scoreCard("Strong days", `${d.completionRate}%`, "Days with 6 or more stars", false)}
@@ -368,12 +441,16 @@
         <div class="grid two-col" style="margin-top:20px;">
           <div class="card">
             <div style="display:flex;justify-content:space-between;gap:16px;align-items:center;flex-wrap:wrap;">
-              <div><div class="section-title">Today’s mission</div><div class="section-sub">Track homework discipline plus extra stars for habits, self-play, and behavior through the day.</div></div>
+              <div><div class="section-title">Today’s mission</div><div class="section-sub">Track homework discipline plus extra stars for habits, feelings, and happy end-of-day reflections.</div></div>
               <input id="selectedDateInput" type="date" value="${state.selectedDate}" style="max-width:220px;" />
             </div>
             <div class="form-grid">
               <div class="fancy-box"><label class="title">Homework duration in minutes</label><input id="durationInput" type="number" min="0" value="${Number(state.form.duration)||0}" /><div class="tiny">Under 30 minutes is best. Over 45 minutes reduces another star. Over 60 minutes gives 0 stars for that day.</div></div>
               <div class="fancy-box alt"><label class="title">Notes</label><textarea id="notesInput" placeholder="Optional notes for the day">${escapeHtml(state.form.notes||"")}</textarea></div>
+            </div>
+            <div class="form-grid" style="margin-top:16px;">
+              <div class="fancy-box"><label class="title">How are you feeling today?</label><select id="feelingInput">${feelingOptions.map((item)=>`<option value="${item.value}" ${state.form.feeling===item.value?"selected":""}>${item.emoji} ${escapeHtml(item.label)}</option>`).join("")}</select><div class="tiny">Pick the feeling that matches the day.</div></div>
+              <div class="fancy-box alt"><label class="title">Best thing about the day</label><textarea id="bestThingInput" placeholder="What was the best thing that happened today?">${escapeHtml(state.form.bestThing||"")}</textarea></div>
             </div>
             <div class="toggle-grid">${toggles}</div>
             <div class="preview-box">
@@ -413,7 +490,7 @@
             <div class="snapshot-grid">
               ${scoreCard("This month", String(d.monthStars), `Stars inside ${getMonthLabel(state.currentMonth)}`, true)}
               ${scoreCard("Last week", String(d.previousWeekStars), "Compare against the current week", false)}
-              <div class="info-box" style="grid-column:1/-1;"><div style="font-size:13px;font-weight:800;color:#64748b;">Reward rule</div><div style="margin-top:8px;line-height:1.5;color:#334155;">Every time total stars reach a multiple of 7, ₹250 gets added to the wallet. Bonus stars from self-play, constructive play, hygiene, behavior, cleanliness, and listening at home also count.</div></div>
+              <div class="info-box" style="grid-column:1/-1;"><div style="font-size:13px;font-weight:800;color:#64748b;">Reward rule</div><div style="margin-top:8px;line-height:1.5;color:#334155;">Every time total stars reach a multiple of 7, ₹250 gets added to savings. If savings stay above ₹1,000, 10% Sunday interest is added automatically, and every 10-day good-behavior streak adds ₹200.</div></div>
               <div class="info-box" style="grid-column:1/-1;"><div style="font-size:13px;font-weight:800;color:#64748b;">Backup rule</div><div style="margin-top:8px;line-height:1.5;color:#334155;">Use Export backup to save the whole app state as a JSON file. Use Import backup later to restore stars, records, wallet, image, and settings on any browser.</div></div>
             </div>
           </div>
@@ -454,16 +531,17 @@
     function triggerCelebration(message,soundKind){ state.celebration={ id:Date.now(), message }; if (state.soundOn) playSound(soundKind||"good"); render(); setTimeout(()=>{ state.celebration=null; render(); },2400); }
     function handleSave(){
       const derived=getDerived();
-      const beforeAmount=Math.floor(derived.totalStars/7)*250;
+      const beforeAmount=derived.creditedAmount;
       const result=calculateStars(state.form);
       const entry={ ...state.form, duration:Number(state.form.duration), baseStars:result.baseStars, bonusStars:result.bonusStars, totalStars:result.totalStars, stars:result.totalStars, reasons:result.reasons, status:result.status, date:state.selectedDate, updatedAt:new Date().toISOString() };
-      const nextRecords={ ...state.records, [state.selectedDate]: entry };
-      const nextTotalStars=Object.values(nextRecords).reduce((sum,item)=>sum+(item.totalStars||item.stars||0),0);
-      const afterAmount=Math.floor(nextTotalStars/7)*250;
-      state.records=nextRecords;
+      const prevRecords = state.records;
+      state.records={ ...state.records, [state.selectedDate]: entry };
+      const afterDerived = getDerived();
+      const extraGain = afterDerived.creditedAmount - beforeAmount;
       state.lastSavedMessage=`Saved ${result.totalStars} star${result.totalStars===1?"":"s"} for ${formatDate(state.selectedDate)}.`;
       saveState();
-      if (afterAmount>beforeAmount) triggerCelebration(`Awesome! ₹${afterAmount} unlocked!`,"unlock");
+      if (extraGain >= 250) triggerCelebration(`Awesome! ₹${afterDerived.creditedAmount} unlocked!`,"unlock");
+      else if (extraGain > 0) triggerCelebration(`Savings grew by ₹${extraGain}!`,"good");
       else if (result.totalStars>=8) triggerCelebration("Superstar day! Bonus stars earned!","epic");
       else if (result.totalStars>=6) triggerCelebration("Great job! Keep the streak going!","good");
       else { if (state.soundOn) playSound("save"); render(); }
@@ -485,7 +563,7 @@
       triggerCelebration(`Spent ₹${amount} for ${purchaseNote}!`,"save");
     }
     function exportBackup(){
-      const payload={ version:2, exportedAt:new Date().toISOString(), app:"homework-quest-html", data:{ profileName:state.profileName, childPhoto:state.childPhoto, records:state.records, debits:state.debits, soundOn:state.soundOn } };
+      const payload={ version:3, exportedAt:new Date().toISOString(), app:"homework-quest-html", data:{ profileName:state.profileName, childPhoto:state.childPhoto, records:state.records, debits:state.debits, soundOn:state.soundOn } };
       const blob=new Blob([JSON.stringify(payload,null,2)],{ type:"application/json" });
       const url=URL.createObjectURL(blob);
       const a=document.createElement("a");
@@ -535,6 +613,8 @@
       const selectedDateInput=document.getElementById("selectedDateInput"); if (selectedDateInput) selectedDateInput.addEventListener("change",(e)=>setSelectedDate(e.target.value));
       const durationInput=document.getElementById("durationInput"); if (durationInput) durationInput.addEventListener("input",(e)=>{ state.form.duration=e.target.value; render(); });
       const notesInput=document.getElementById("notesInput"); if (notesInput) notesInput.addEventListener("input",(e)=>{ state.form.notes=e.target.value; });
+      const feelingInput=document.getElementById("feelingInput"); if (feelingInput) feelingInput.addEventListener("change",(e)=>{ state.form.feeling=e.target.value; render(); });
+      const bestThingInput=document.getElementById("bestThingInput"); if (bestThingInput) bestThingInput.addEventListener("input",(e)=>{ state.form.bestThing=e.target.value; });
       const spendAmountInput=document.getElementById("spendAmountInput"); if (spendAmountInput) spendAmountInput.addEventListener("input",(e)=>{ state.spendForm.amount=e.target.value; render(); });
       const purchaseNoteInput=document.getElementById("purchaseNoteInput"); if (purchaseNoteInput) purchaseNoteInput.addEventListener("input",(e)=>{ state.spendForm.purchaseNote=e.target.value; });
       document.querySelectorAll("[data-toggle]").forEach((el)=>{ el.addEventListener("click",()=>{ const key=el.getAttribute("data-toggle"); state.form[key]=!state.form[key]; render(); }); });
