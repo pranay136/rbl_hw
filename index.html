@@ -1,0 +1,483 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Homework Quest</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+  <style>
+    :root{
+      --bg1:#fff7ed; --bg2:#fdf2f8; --bg3:#eff6ff; --bg4:#eef2ff;
+      --card:rgba(255,255,255,0.9); --border:#e2e8f0; --text:#0f172a; --muted:#64748b;
+      --pink:#d946ef; --orange:#f97316; --amber:#f59e0b; --blue:#2563eb; --green:#16a34a; --rose:#f43f5e;
+      --shadow:0 16px 40px rgba(15,23,42,0.08);
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--text);background:radial-gradient(circle at top,var(--bg1) 0%,var(--bg2) 25%,var(--bg3) 70%,var(--bg4) 100%);min-height:100vh}
+    .app{max-width:1400px;margin:0 auto;padding:12px}
+    .grid{display:grid;gap:20px}
+    .top-grid{grid-template-columns:1.2fr .8fr}
+    .two-col{grid-template-columns:1fr 1fr}
+    .stats-grid{grid-template-columns:repeat(6,minmax(0,1fr))}
+    .progress-grid{grid-template-columns:1.1fr .9fr}
+    .card{background:var(--card);border:1px solid rgba(255,255,255,.6);border-radius:32px;padding:24px;box-shadow:var(--shadow);backdrop-filter:blur(10px)}
+    .hero{background:linear-gradient(135deg,#c026d3 0%,#7c3aed 45%,#0284c7 100%);color:white;overflow:hidden}
+    .hero .pill{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.18);border-radius:999px;padding:6px 12px;font-size:12px;font-weight:700;margin:8px 8px 0 0}
+    .hero-wrap{display:flex;gap:24px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+    .hero-sub{font-size:13px;text-transform:uppercase;letter-spacing:.28em;color:#f5d0fe;font-weight:800}
+    h1,h2,h3,p{margin:0}
+    h1{margin-top:8px;font-size:clamp(34px,5vw,56px);line-height:1}
+    .hero p{margin-top:14px;max-width:760px;color:#fae8ff}
+    .sound-btn,.small-btn,.action-btn{border:none;cursor:pointer;font-weight:800;transition:transform .18s ease,box-shadow .18s ease,background .18s ease}
+    .sound-btn{background:rgba(255,255,255,.2);color:white;border-radius:999px;padding:8px 14px;font-size:12px}
+    .sound-btn:hover,.small-btn:hover,.action-btn:hover{transform:translateY(-1px)}
+    .profile-grid{display:grid;gap:16px}
+    label.title{display:block;font-size:13px;font-weight:800;color:#475569;margin-bottom:8px}
+    input[type="text"],input[type="number"],input[type="date"],textarea{width:100%;border:1px solid var(--border);border-radius:20px;padding:14px 16px;background:white;font:inherit;color:var(--text);outline:none}
+    textarea{resize:vertical;min-height:118px}
+    input:focus,textarea:focus{border-color:#c026d3;box-shadow:0 0 0 3px rgba(192,38,211,.08)}
+    .upload-note,.tiny{font-size:12px;color:var(--muted);margin-top:8px}
+    .stats-grid .stat{background:white;border:1px solid var(--border);border-radius:28px;padding:18px;box-shadow:0 8px 18px rgba(15,23,42,.04)}
+    .stat.glow{background:linear-gradient(135deg,#fdf4ff 0%,#fffbeb 100%);border-color:#f5d0fe}
+    .stat-label{font-size:13px;color:var(--muted)}
+    .stat-value{font-size:32px;font-weight:900;margin-top:8px}
+    .stat-sub{font-size:12px;color:var(--muted);margin-top:4px}
+    .section-title{font-size:28px;font-weight:900}
+    .section-sub{font-size:14px;color:var(--muted);margin-top:6px}
+    .form-grid{display:grid;gap:16px;grid-template-columns:1fr 1fr;margin-top:18px}
+    .fancy-box{border-radius:24px;padding:16px;background:linear-gradient(135deg,#eff6ff,#eef2ff)}
+    .fancy-box.alt{background:linear-gradient(135deg,#fff7ed,#fff1f2)}
+    .toggle-grid{display:grid;gap:12px;grid-template-columns:1fr 1fr;margin-top:16px}
+    .toggle{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;border:1px solid var(--border);background:white;border-radius:22px;box-shadow:0 8px 18px rgba(15,23,42,.04);cursor:pointer}
+    .toggle-left{display:flex;align-items:center;gap:12px;min-width:0}
+    .emoji-badge{width:38px;height:38px;display:grid;place-items:center;border-radius:999px;background:#f1f5f9;font-size:18px;flex:0 0 auto}
+    .toggle span.label{font-size:14px;font-weight:700;color:#334155}
+    .switch{width:48px;height:28px;border-radius:999px;position:relative;flex:0 0 auto;background:#cbd5e1;transition:background .18s ease}
+    .switch::after{content:"";position:absolute;top:3px;left:4px;width:22px;height:22px;border-radius:999px;background:white;transition:left .18s ease;box-shadow:0 1px 3px rgba(15,23,42,.18)}
+    .toggle.active.positive .switch{background:#22c55e}
+    .toggle.active.negative .switch{background:#f43f5e}
+    .toggle.active .switch::after{left:22px}
+    .preview-box{margin-top:20px;border-radius:28px;padding:18px;background:linear-gradient(90deg,#f5d0fe,#fffbeb,#e0f2fe)}
+    .preview-top{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
+    .save-btn{background:linear-gradient(90deg,#c026d3,#f97316);color:white;padding:14px 18px;border-radius:20px;font-size:14px;box-shadow:0 12px 22px rgba(192,38,211,.22)}
+    .preview-score{font-size:42px;font-weight:900;margin-top:6px}
+    .reason{background:rgba(255,255,255,.84);border-radius:18px;padding:10px 12px;font-size:14px;color:#334155}
+    .reason-list{display:grid;gap:8px;margin-top:14px}
+    .success{margin-top:14px;font-size:14px;font-weight:800;color:#15803d}
+    .reward-grid{display:grid;gap:14px;grid-template-columns:repeat(4,minmax(0,1fr));margin-top:18px}
+    .reward-card{border-radius:24px;padding:16px;border:1px solid var(--border);background:#f8fafc;transition:transform .18s ease}
+    .reward-card:hover{transform:translateY(-2px)}
+    .reward-card.unlocked{background:#ecfdf5;border-color:#bbf7d0}
+    .reward-emoji{font-size:32px}
+    .reward-title{font-size:16px;font-weight:900;margin-top:8px}
+    .reward-detail{font-size:13px;color:var(--muted);margin-top:4px;min-height:36px}
+    .badge{display:inline-flex;padding:6px 10px;border-radius:999px;font-size:11px;font-weight:800;margin-top:12px;background:#e2e8f0;color:#475569}
+    .badge.ok{background:#dcfce7;color:#15803d}
+    .progress-box{margin-top:16px;background:#f8fafc;border-radius:24px;padding:16px}
+    .meter-head{display:flex;justify-content:space-between;gap:16px;font-size:14px}
+    .meter-track{height:16px;border-radius:999px;background:#e2e8f0;margin-top:8px;overflow:hidden}
+    .meter-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,#d946ef,#fb923c,#fbbf24);transition:width .35s ease}
+    .trend-note{margin-top:16px;padding:14px 16px;border-radius:22px;font-size:14px}
+    .trend-up{background:#ecfdf5;border:1px solid #bbf7d0;color:#166534}
+    .trend-down{background:#fffbeb;border:1px solid #fde68a;color:#92400e}
+    .avatar-scroll{margin-top:16px;max-height:540px;overflow:auto;border:1px solid #f1f5f9;border-radius:24px;padding:8px;background:rgba(255,255,255,.66)}
+    .avatar-grid{display:grid;gap:14px;grid-template-columns:repeat(3,minmax(0,1fr))}
+    .avatar-card{background:white;border:1px solid var(--border);border-radius:28px;padding:16px;box-shadow:0 8px 18px rgba(15,23,42,.04);transition:transform .18s ease,border-color .18s ease,background .18s ease,opacity .18s ease}
+    .avatar-card.active{border-color:#f0abfc;background:#fdf4ff}
+    .avatar-card.locked{opacity:.5}
+    .avatar-card:hover{transform:translateY(-2px)}
+    .avatar-head{position:relative;width:80px;height:80px;border:4px solid #2563eb;border-radius:10px;overflow:hidden;background:white;box-shadow:0 10px 18px rgba(15,23,42,.08)}
+    .avatar-top-band{position:absolute;inset:auto 0 auto 0;top:0;height:16px}
+    .avatar-grid-overlay{position:absolute;inset:0;opacity:.4;background-image:linear-gradient(90deg,transparent 48%,rgba(255,255,255,.15) 48%,rgba(255,255,255,.15) 52%,transparent 52%),linear-gradient(transparent 48%,rgba(255,255,255,.15) 48%,rgba(255,255,255,.15) 52%,transparent 52%);background-size:16px 16px;pointer-events:none}
+    .mini-accessory{position:absolute;right:-8px;top:-8px;width:32px;height:32px;display:grid;place-items:center;background:#0f172a;color:white;border-radius:8px;border:2px solid white;font-size:14px;box-shadow:0 10px 18px rgba(15,23,42,.12)}
+    .avatar-figure{display:flex;flex-direction:column;align-items:center}
+    .avatar-stage{margin-top:10px;border-radius:24px;background:linear-gradient(180deg,#f0f9ff,#eef2ff);padding:16px}
+    .torso,.arm,.leg{position:relative;overflow:hidden;border-radius:8px}
+    .torso{width:64px;height:56px;margin-bottom:4px}
+    .arms{margin-top:-56px;width:112px;display:flex;justify-content:space-between;padding:0 4px}
+    .arm{width:20px;height:48px}
+    .legs{margin-top:4px;display:flex;gap:8px}
+    .leg{width:24px;height:56px}
+    .texture{position:absolute;inset:0;opacity:.55}
+    .texture.waves{background:linear-gradient(135deg,rgba(255,255,255,.28) 25%,transparent 25%,transparent 50%,rgba(255,255,255,.28) 50%,rgba(255,255,255,.28) 75%,transparent 75%,transparent);background-size:16px 16px}
+    .texture.neon{background:radial-gradient(circle at 30% 30%,rgba(255,255,255,.35),transparent 35%),linear-gradient(135deg,rgba(255,255,255,.15),transparent)}
+    .texture.scales{background:radial-gradient(circle at 50% 100%,rgba(255,255,255,.25) 22%,transparent 23%),radial-gradient(circle at 0% 100%,rgba(255,255,255,.18) 20%,transparent 21%);background-size:18px 18px}
+    .texture.sparkle{background:radial-gradient(circle,rgba(255,255,255,.4) 10%,transparent 12%);background-size:18px 18px}
+    .texture.lava{background:linear-gradient(135deg,rgba(255,255,255,.12) 25%,transparent 25%,transparent 50%,rgba(0,0,0,.08) 50%,rgba(0,0,0,.08) 75%,transparent 75%,transparent);background-size:14px 14px}
+    .texture.shadow{background:linear-gradient(180deg,rgba(255,255,255,.18),rgba(0,0,0,.12))}
+    .texture.pixel{background:linear-gradient(90deg,rgba(255,255,255,.12) 50%,transparent 50%),linear-gradient(rgba(255,255,255,.12) 50%,transparent 50%);background-size:12px 12px}
+    .chart-wrap{height:320px;margin-top:20px}
+    .snapshot-grid{display:grid;gap:16px;grid-template-columns:1fr 1fr;margin-top:16px}
+    .info-box{background:#f8fafc;border-radius:24px;padding:16px}
+    .calendar-head{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
+    .month-nav{display:flex;align-items:center;gap:12px}
+    .small-btn{padding:10px 16px;border-radius:18px;background:white;border:1px solid var(--border);color:#334155;font-size:14px}
+    .calendar-days,.calendar-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px}
+    .calendar-days{margin-top:18px;font-size:12px;font-weight:900;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;text-align:center}
+    .day-card{min-height:98px;border:1px solid var(--border);border-radius:20px;background:white;padding:10px;text-align:left;transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease;cursor:pointer}
+    .day-card.outside{background:#f8fafc;color:#94a3b8}
+    .day-card.selected{border-color:#d946ef;box-shadow:0 0 0 3px rgba(217,70,239,.14)}
+    .day-card:hover{transform:translateY(-1px)}
+    .day-top{display:flex;justify-content:space-between;gap:8px;align-items:center}
+    .day-num{font-size:14px;font-weight:900}
+    .star-pill{display:inline-flex;align-items:center;gap:4px;padding:4px 8px;border-radius:999px;font-size:11px;font-weight:900;border:1px solid transparent}
+    .tone-high{background:#dcfce7;color:#166534;border-color:#bbf7d0}
+    .tone-mid{background:#fef3c7;color:#92400e;border-color:#fde68a}
+    .tone-low{background:#ffedd5;color:#9a3412;border-color:#fdba74}
+    .tone-zero{background:#ffe4e6;color:#be123c;border-color:#fda4af}
+    .bottom-nav{position:sticky;bottom:12px;max-width:420px;margin:0 auto;display:none;justify-content:space-around;align-items:center;gap:12px;padding:12px;border-radius:28px;background:rgba(255,255,255,.92);border:1px solid rgba(255,255,255,.7);box-shadow:0 18px 30px rgba(15,23,42,.12);backdrop-filter:blur(10px)}
+    .nav-item{text-align:center;font-size:12px;font-weight:900;color:#64748b}
+    .nav-item.active{color:#c026d3}
+    .nav-item .icon{font-size:18px}
+    .celebration{position:fixed;left:50%;top:16px;transform:translateX(-50%);width:min(92vw,460px);z-index:50;background:rgba(255,255,255,.95);border:1px solid #fde68a;border-radius:28px;box-shadow:0 20px 40px rgba(15,23,42,.18);padding:18px;text-align:center;backdrop-filter:blur(10px);animation:popIn .25s ease;overflow:hidden}
+    .celebration h3{font-size:20px;font-weight:900;margin-top:4px}
+    .starburst{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+    .burst-star{position:absolute;left:50%;bottom:16px;font-size:20px;animation:burst 1.8s ease forwards}
+    @keyframes burst{0%{opacity:0;transform:translate(0,20px) rotate(0)}10%{opacity:1}100%{opacity:0;transform:translate(var(--x),-120px) rotate(var(--r))}}
+    @keyframes popIn{from{opacity:0;transform:translateX(-50%) translateY(-14px) scale(.96)}to{opacity:1;transform:translateX(-50%) translateY(0) scale(1)}}
+    .toolbar{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
+    .action-btn{background:white;border:1px solid var(--border);border-radius:18px;color:#334155;padding:11px 14px;font-size:13px}
+    .action-btn.primary{background:#0f172a;color:white;border-color:#0f172a}
+    .hidden{display:none!important}
+    .muted{color:var(--muted)}
+    @media (max-width:1200px){.stats-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.reward-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.avatar-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    @media (max-width:900px){.top-grid,.two-col,.progress-grid,.form-grid,.toggle-grid,.snapshot-grid{grid-template-columns:1fr}.app{padding:10px}.card{padding:18px}}
+    @media (max-width:720px){.stats-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.reward-grid{grid-template-columns:1fr 1fr}.avatar-grid{grid-template-columns:1fr}.bottom-nav{display:flex}.calendar-days,.calendar-grid{gap:6px}.day-card{min-height:90px}.preview-score{font-size:36px}}
+    @media (max-width:520px){.stats-grid,.reward-grid{grid-template-columns:1fr}.calendar-days,.calendar-grid{grid-template-columns:repeat(7,minmax(42px,1fr))}.day-card{padding:8px;min-height:84px}.hero .pill{margin-right:6px}}
+  </style>
+</head>
+<body>
+  <div id="app" class="app"></div>
+  <input type="file" id="backupImportInput" class="hidden" accept="application/json,.json" />
+  <script>
+    const STORAGE_KEY = "homework-star-tracker-html-v1";
+    const characterNameSeeds = ["Tralalero Tralala","Nubini Kekini","Agarrini la Palini","Alessio","Anpali Babel","Antonio","Aquanaut","Arachnid Family","Arcadopus","Avocadini Antilopini","Avocadini Guffo","Avocadorilla","Ay Mi Gatito","Bacuru and Egguru","Ballerina Cappuccina","Ballerina Peppermintina","Ballerino Lololo","Bambini Crostini","Bambu Bambu Sahur","Bananita Dolphinita","Bananito Bandito","Bandito Axolito","Bandito Bobritto","Belula Beluga","Bicicleteira Family","Bisonte Giuppitere","Blackhole Goat","Blueberrinni Octopusini","Boatito Auratito","Boba Panda","Bombardini Tortinii","Bombardiro Crocodilo","Bombombini Gusini","Boneca Ambalabu","Brainrot God","Brasilini Berimbini","Brr Brr Patapim","Brr es Teh Patipum","Brri Brri Bicus Dicus Bombicus","Brunito Marsito","Brutto Gialutto","Buho de Fuego","Buho de Noelo","Bulbito Bandito Traktorito","Bunito Bunito Spinito","Bunnyman","Burbaloni Loliloli","Burguro and Fryuro","Burrito Bandito","Cacasito Satalito","Cachorrito Melonito","Cacto Hipopotamo","Capi Taco","Capitano Moby","Cappuccino Assassino","Cappuccino Clownino","Caramello Filtrello","Carloo","Carrotini Brainini","Cavallo Virtuoso","Celularcini Viciosini","Centrucci Nuclucci","Cerberus","Chachechi","Chef Crabracadabra","Chicleteira Bicicleteira","Chicleteira Noelteira","Chicleteirina Bicicleteirina","Chihuanini Taconini","Chill Puppy","Chillin Chili","Chimnino","Chimpanzini Bananini","Chimpanzini Spiderini","Chipso and Queso","Chocco Bunny","Chrismasmamat","Clickerino Crabo","Cocoa Assassino","Cocofanto Elefanto","Cocosini Mama","Coffin Tung Tung Tung Sahur","Cooki and Milki","Corn Corn Corn Sahur","Crabbo Limonetta","Cuadramat and Pakrahmatmamat","Cupcake Koala","Developini Braziliaspidini","Doi Doi Do","Dolphini Jetskini","Donkeyturbo Express","Dragon Cannelloni","Dragon Family","Dragon Gingerini","Dug dug dug","Dul Dul Dul","Elefanto Frigo","Esok Sekolah","Espresso Signora","Eviledon","Extinct Ballerina","Extinct Matteo","Extinct Tralalero","Festive 67","Festive Lucky Block","Fishino Clownino","Fizzy Soda","Fluriflura","Fragola La La La","Fragrama and Chocrama","Frankentteo","Frigo Camelo","Frio Ninja","Frogato Pirato","Frogo Elfo","Ganganzelli Trulala","Gangster Footera","Garama and Madundung","Gattatino Neonino","Gattatino Nyanino","Gattito Tacoto","Giftini Spyderini","Ginger Cisterna","Ginger Gerat","Ginger Globo","Girafa Celestre","Glorbo Fruttodrillo","GOAT","Gobblino Uniciclino","Gold Elf","Gorillo Subwoofero","Gorillo Watermelondrillo","Graipuss Medussi","Granchiello Spiritell","Guerriro Digitale","Guest 666","Headless Horseman","Ho Ho Ho Sahur","Horegini Boom","Hydra Dragon Cannelloni","Ice Dragon","Jacko Jack Jack","Jacko Spaventosa","Jackorilla","Jingle Jingle Sahur","Job Job Job Sahur","John Pork","Jolly Jolly Sahur","Karker Sahur","Karkerkar Kurkur","Karkerkur Family","Ketchuru and Musturu","Ketupat Bros","Ketupat Kepat","Kings Coleslaw","Krupuk Pagi Pagi","La Casa Boo","La Cucaracha","La Extinct Grande","La Ginger Sekolah","La Grande Combinasion","La Jolly Grande","La Karkerkar Combinasion","La Sahur Combinasion","La Secret Combinasion","La Spooky Grande","La Supreme Combinasion","La Taco Combinasion","La Vacca Jacko Linterino","La Vacca Saturno Saturnita","Las Capuchinas","Las Sis","Las Tralaleritas","Las Vaquitas Saturnitas","Lavadorito Spinito","Lerulerulerule","Lionel Cactuseli","Lirilì Larilà","List List List Sahur","Los 25","Los 67","Los Bombinitos","Los Bros","Los Candies","Los Chicleteiras","Los Chihuaninis","Los Combinasionas","Los Crocodillitos"];
+    const accessorySeeds = ["🦈","⚡","🐊","🩰","🥁","☕","⛏️","🧱","💚","☁️","🟣","🦖","🐉","🔥","🪽","🧂","🍓","🍔","🍟","🎃","🥛","🧀","🍫","🍀","🏮","🗡️","🧸","🧊","🥥","🚽","🐼","🕷️","🐙","🦌","🚲","🌌","🐐","🪐","🍌","🦎"];
+    const paletteSeeds = [
+      { torso:"#60a5fa", arms:"#38bdf8", legs:"#1d4ed8", accent:"#2563eb", cap:"#dbeafe" },
+      { torso:"#f472b6", arms:"#fb7185", legs:"#be185d", accent:"#9d174d", cap:"#fce7f3" },
+      { torso:"#34d399", arms:"#6ee7b7", legs:"#047857", accent:"#065f46", cap:"#d1fae5" },
+      { torso:"#8b5cf6", arms:"#a78bfa", legs:"#5b21b6", accent:"#4c1d95", cap:"#ede9fe" },
+      { torso:"#fb923c", arms:"#fdba74", legs:"#c2410c", accent:"#9a3412", cap:"#ffedd5" },
+      { torso:"#94a3b8", arms:"#cbd5e1", legs:"#475569", accent:"#1e293b", cap:"#f1f5f9" },
+      { torso:"#fbbf24", arms:"#fde68a", legs:"#b45309", accent:"#92400e", cap:"#fef3c7" },
+      { torso:"#22c55e", arms:"#86efac", legs:"#15803d", accent:"#166534", cap:"#dcfce7" },
+      { torso:"#06b6d4", arms:"#67e8f9", legs:"#0e7490", accent:"#155e75", cap:"#cffafe" },
+      { torso:"#e879f9", arms:"#f5d0fe", legs:"#a21caf", accent:"#86198f", cap:"#fae8ff" }
+    ];
+    const textureSeeds = ["waves","neon","scales","sparkle","lava","shadow","pixel"];
+    const avatarThemes = Array.from({ length:41 }, (_, index) => {
+      const name = characterNameSeeds[index % characterNameSeeds.length];
+      const palette = paletteSeeds[index % paletteSeeds.length];
+      const accessory = accessorySeeds[index % accessorySeeds.length];
+      const texture = textureSeeds[index % textureSeeds.length];
+      const levelAmount = index * 250;
+      return { name:index===0?`${name} Starter`:`${name} Lv.${index}`, badge:index===0?"Base Skin":`Unlocked at ₹${levelAmount}`, ...palette, accessory, texture };
+    });
+    const rewardMilestones = [
+      { amount:250, title:"Story Time", detail:"Unlock a special story session.", emoji:"📚" },
+      { amount:500, title:"Papa Play Time", detail:"Unlock one dedicated play session with Papa.", emoji:"⚽" },
+      { amount:1000, title:"New Game", detail:"Unlock a brand new game reward.", emoji:"🎮" },
+      { amount:2000, title:"Movie Night", detail:"Unlock a special family movie night.", emoji:"🎬" },
+      { amount:3000, title:"Fun Outing", detail:"Unlock a mini outing or favorite treat day.", emoji:"🎡" },
+      { amount:5000, title:"Super Surprise", detail:"Unlock a bigger surprise reward chosen by parents.", emoji:"🎁" },
+      { amount:7500, title:"Mega Champion", detail:"Unlock a mega celebration and special badge.", emoji:"🏆" },
+      { amount:10000, title:"Legend Reward", detail:"Unlock the final legendary reward tier.", emoji:"👑" }
+    ];
+    const defaultForm = { duration:30, completedHomework:true, stayedInOnePlace:true, gotUp:false, talked:false, tookBreak:false, focused:true, goodBehavior:false, noComplaint:false, selfPlayHour:false, constructivePlayHour:false, bathAndBrush:false, goodBehaviorAtHome:false, noMessAllDay:false, listenedToParents:false, notes:"" };
+    const toggleDefinitions = [
+      { key:"completedHomework", label:"Homework fully completed", emoji:"✅", positive:true },
+      { key:"stayedInOnePlace", label:"Sat in one place", emoji:"🪑", positive:true },
+      { key:"gotUp", label:"Got up during homework", emoji:"🏃", positive:false },
+      { key:"talked", label:"Talked during homework", emoji:"🗣️", positive:false },
+      { key:"tookBreak", label:"Took a break in between", emoji:"☕", positive:false },
+      { key:"focused", label:"Stayed focused throughout", emoji:"🎯", positive:true },
+      { key:"goodBehavior", label:"Good behavior bonus star", emoji:"🌟", positive:true },
+      { key:"noComplaint", label:"No complaint bonus star", emoji:"😇", positive:true },
+      { key:"selfPlayHour", label:"1 hour of self-play", emoji:"🧩", positive:true },
+      { key:"constructivePlayHour", label:"1 hour of constructive play", emoji:"🛠️", positive:true },
+      { key:"bathAndBrush", label:"Took bath and brushed nicely", emoji:"🛁", positive:true },
+      { key:"goodBehaviorAtHome", label:"Good behavior at home", emoji:"🏠", positive:true },
+      { key:"noMessAllDay", label:"Did not create a mess all day", emoji:"🧼", positive:true },
+      { key:"listenedToParents", label:"Said yes to mother and father", emoji:"🙌", positive:true }
+    ];
+    let state = { profileName:"Homework Hero", childPhoto:"", records:{}, selectedDate:todayKey(), form:{ ...defaultForm }, currentMonth:new Date(), lastSavedMessage:"", soundOn:true, celebration:null };
+    let weeklyChart = null;
+
+    function dateKeyFromDate(date){ const y=date.getFullYear(); const m=String(date.getMonth()+1).padStart(2,"0"); const d=String(date.getDate()).padStart(2,"0"); return `${y}-${m}-${d}`; }
+    function todayKey(){ return dateKeyFromDate(new Date()); }
+    function formatDate(dateKey){ const d=new Date(dateKey+"T00:00:00"); return d.toLocaleDateString(undefined,{ weekday:"short", day:"numeric", month:"short", year:"numeric" }); }
+    function getMonthLabel(date){ return date.toLocaleDateString(undefined,{ month:"long", year:"numeric" }); }
+    function calculateStars(entry){
+      if (Number(entry.duration) > 60) return { baseStars:0, bonusStars:0, totalStars:0, reasons:["More than 60 minutes means 0 stars for the day."], status:"reset" };
+      let baseStars = 7;
+      const reasons = [];
+      if (!entry.completedHomework){ baseStars -= 1; reasons.push("Homework was not fully completed."); }
+      if (Number(entry.duration) > 30){ baseStars -= 1; reasons.push("Took more than 30 minutes."); }
+      if (Number(entry.duration) > 45){ baseStars -= 1; reasons.push("Took more than 45 minutes."); }
+      if (!entry.stayedInOnePlace){ baseStars -= 1; reasons.push("Did not sit in one place."); }
+      if (entry.gotUp){ baseStars -= 1; reasons.push("Got up during homework."); }
+      if (entry.talked){ baseStars -= 1; reasons.push("Talked during homework."); }
+      if (entry.tookBreak){ baseStars -= 1; reasons.push("Took a break in between."); }
+      if (!entry.focused){ baseStars -= 1; reasons.push("Focus was broken."); }
+      baseStars = Math.max(0, baseStars);
+      let bonusStars = 0;
+      const bonusReasons = [];
+      if (entry.goodBehavior){ bonusStars += 1; bonusReasons.push("good behavior bonus"); }
+      if (entry.noComplaint){ bonusStars += 1; bonusReasons.push("no complaint bonus"); }
+      if (entry.selfPlayHour){ bonusStars += 1; bonusReasons.push("1 hour of self-play"); }
+      if (entry.constructivePlayHour){ bonusStars += 1; bonusReasons.push("1 hour of constructive play"); }
+      if (entry.bathAndBrush){ bonusStars += 1; bonusReasons.push("bath and brushing nicely"); }
+      if (entry.goodBehaviorAtHome){ bonusStars += 1; bonusReasons.push("good behavior at home"); }
+      if (entry.noMessAllDay){ bonusStars += 1; bonusReasons.push("no mess throughout the day"); }
+      if (entry.listenedToParents){ bonusStars += 1; bonusReasons.push("listened to mother and father"); }
+      if (bonusStars > 0){ reasons.push(`Bonus stars earned: ${bonusStars}.`); reasons.push(`Bonus sources: ${bonusReasons.join(", ")}.`); }
+      if (!reasons.length) reasons.push("Perfect session. All homework stars earned.");
+      const totalStars = baseStars + bonusStars;
+      const status = totalStars >= 12 ? "epic" : totalStars >= 8 ? "great" : totalStars >= 4 ? "good" : "tryAgain";
+      return { baseStars, bonusStars, totalStars, reasons, status };
+    }
+    function getWeekStart(dateKey){ const d=new Date(dateKey+"T00:00:00"); const day=d.getDay(); const diff=day===0?-6:1-day; d.setDate(d.getDate()+diff); return d; }
+    function weekLabelFromDate(dateKey){ const start=getWeekStart(dateKey); const end=new Date(start); end.setDate(start.getDate()+6); return `${start.toLocaleDateString(undefined,{ month:"short", day:"numeric" })} - ${end.toLocaleDateString(undefined,{ month:"short", day:"numeric" })}`; }
+    function getCalendarDays(currentMonth){ const y=currentMonth.getFullYear(); const m=currentMonth.getMonth(); const first=new Date(y,m,1); const last=new Date(y,m+1,0); const start=new Date(first); const startDay=start.getDay(); const mondayShift=startDay===0?6:startDay-1; start.setDate(start.getDate()-mondayShift); const end=new Date(last); const endDay=end.getDay(); const sundayShift=endDay===0?0:7-endDay; end.setDate(end.getDate()+sundayShift); const days=[]; const cursor=new Date(start); while (cursor<=end){ days.push(new Date(cursor)); cursor.setDate(cursor.getDate()+1);} return days; }
+    function toneClass(stars){ if (stars >= 8) return "tone-high"; if (stars >= 5) return "tone-mid"; if (stars >= 1) return "tone-low"; return "tone-zero"; }
+    function saveState(){ localStorage.setItem(STORAGE_KEY, JSON.stringify({ version:1, profileName:state.profileName, childPhoto:state.childPhoto, records:state.records, soundOn:state.soundOn })); }
+    function loadState(){ const raw=localStorage.getItem(STORAGE_KEY); if (!raw) return; try{ const parsed=JSON.parse(raw); state.profileName=parsed.profileName||"Homework Hero"; state.childPhoto=parsed.childPhoto||""; state.records=parsed.records||{}; state.soundOn=parsed.soundOn ?? true; } catch(err){ console.error("Could not load saved data", err); } }
+    function getRecordsArray(){ return Object.values(state.records).sort((a,b)=>a.date.localeCompare(b.date)); }
+    function getDerived(){
+      const recordsArray = getRecordsArray();
+      const totalStars = recordsArray.reduce((sum,item)=>sum+(item.totalStars||item.stars||0),0);
+      const creditedAmount = Math.floor(totalStars / 7) * 250;
+      const pendingStars = totalStars % 7;
+      const permanentlyUnlockedCount = Math.min(avatarThemes.length - 1, Math.floor(creditedAmount / 250));
+      const weeklyBuckets = {};
+      recordsArray.forEach((item)=>{ const label=weekLabelFromDate(item.date); if (!weeklyBuckets[label]) weeklyBuckets[label]={ week:label, stars:0, sessions:0 }; weeklyBuckets[label].stars += item.totalStars || item.stars || 0; weeklyBuckets[label].sessions += 1; });
+      const weeklyData = Object.values(weeklyBuckets).slice(-8);
+      const thisWeekStars = weeklyData.length ? weeklyData[weeklyData.length - 1].stars : 0;
+      const previousWeekStars = weeklyData.length > 1 ? weeklyData[weeklyData.length - 2].stars : 0;
+      const trendDown = weeklyData.length > 1 && thisWeekStars < previousWeekStars;
+      const activeUnlockedCount = Math.max(0, permanentlyUnlockedCount - (trendDown ? 1 : 0));
+      const activeTheme = avatarThemes[Math.min(activeUnlockedCount, avatarThemes.length - 1)];
+      const thisMonthLabel = `${state.currentMonth.getFullYear()}-${String(state.currentMonth.getMonth()+1).padStart(2,"0")}`;
+      const monthStars = recordsArray.filter((item)=>item.date.startsWith(thisMonthLabel)).reduce((sum,item)=>sum+(item.totalStars||item.stars||0),0);
+      const todayWeekStart = dateKeyFromDate(getWeekStart(todayKey()));
+      const weekStars = recordsArray.filter((item)=>item.date>=todayWeekStart).reduce((sum,item)=>sum+(item.totalStars||item.stars||0),0);
+      const completionRate = recordsArray.length ? Math.round((recordsArray.filter((item)=>(item.totalStars||item.stars||0)>=6).length / recordsArray.length) * 100) : 0;
+      const projectedNextCredit = pendingStars === 0 ? 7 : 7 - pendingStars;
+      const previewResult = calculateStars(state.form);
+      const calendarDays = getCalendarDays(state.currentMonth);
+      const rewardProgress = Math.min(creditedAmount, 10000);
+      let streak = 0;
+      let cursor = new Date(todayKey() + "T00:00:00");
+      while (true){
+        const key = dateKeyFromDate(cursor);
+        const entry = state.records[key];
+        if (entry && (entry.totalStars||entry.stars||0) > 0){ streak += 1; cursor.setDate(cursor.getDate()-1); } else break;
+      }
+      return { recordsArray,totalStars,creditedAmount,pendingStars,permanentlyUnlockedCount,weeklyData,thisWeekStars,previousWeekStars,trendDown,activeUnlockedCount,activeTheme,monthStars,weekStars,completionRate,projectedNextCredit,previewResult,calendarDays,rewardProgress,streak };
+    }
+    function escapeHtml(str){ return String(str).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;"); }
+    function avatarCard(theme, title, subtitle, active, locked){
+      const face = state.childPhoto && !locked ? `<img src="${state.childPhoto}" alt="Child avatar" style="width:100%;height:100%;object-fit:cover;">` : `<div style="width:100%;height:100%;display:grid;place-items:center;font-size:32px;">${theme.accessory}</div>`;
+      return `<div class="avatar-card ${active?"active":""} ${locked?"locked":""}"><div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start;"><div><div style="font-size:14px;font-weight:900;">${escapeHtml(title)}</div><div class="tiny">${escapeHtml(subtitle)}</div></div><div class="badge ${locked?"":active?"ok":""}">${locked?"Locked":active?"Active":"Unlocked"}</div></div><div class="avatar-stage"><div class="avatar-figure"><div style="position:relative;margin-bottom:10px;"><div class="avatar-head" style="border-color:${theme.accent}">${face}<div class="avatar-top-band" style="background:${theme.cap}"></div><div class="avatar-grid-overlay"></div></div><div class="mini-accessory">${theme.accessory}</div></div><div class="torso" style="background:${theme.torso}"><div class="texture ${theme.texture}"></div></div><div class="arms"><div class="arm" style="background:${theme.arms}"><div class="texture ${theme.texture}"></div></div><div class="arm" style="background:${theme.arms}"><div class="texture ${theme.texture}"></div></div></div><div class="legs"><div class="leg" style="background:${theme.legs}"><div class="texture ${theme.texture}"></div></div><div class="leg" style="background:${theme.legs}"><div class="texture ${theme.texture}"></div></div></div></div></div></div>`;
+    }
+    function scoreCard(label, value, subvalue, glow){ return `<div class="stat ${glow?"glow":""}"><div class="stat-label">${escapeHtml(label)}</div><div class="stat-value">${escapeHtml(value)}</div>${subvalue?`<div class="stat-sub">${escapeHtml(subvalue)}</div>`:""}</div>`; }
+    function progressMeter(value, max, label){ const percent=Math.max(0,Math.min(100,(value/max)*100)); return `<div><div class="meter-head"><span style="font-weight:800;color:#334155">${escapeHtml(label)}</span><span class="muted">${value} / ${max}</span></div><div class="meter-track"><div class="meter-fill" style="width:${percent}%"></div></div></div>`; }
+    function renderCelebration(){ if (!state.celebration) return ""; let stars=""; for (let i=0;i<12;i++){ const x=(i%2===0?-1:1)*(16+i*3); const r=i*24; stars += `<div class="burst-star" style="--x:${x}px;--r:${r}deg;animation-delay:${i*0.03}s;">⭐</div>`; } return `<div class="celebration"><div class="starburst">${stars}</div><div style="position:relative;z-index:1"><div style="font-size:32px;">🎉</div><h3>${escapeHtml(state.celebration.message)}</h3></div></div>`; }
+    function render(){
+      const d = getDerived();
+      const app = document.getElementById("app");
+      const toggles = toggleDefinitions.map((t)=>`<div class="toggle ${state.form[t.key]?"active":""} ${t.positive?"positive":"negative"}" data-toggle="${t.key}"><div class="toggle-left"><div class="emoji-badge">${t.emoji}</div><span class="label">${escapeHtml(t.label)}</span></div><div class="switch"></div></div>`).join("");
+      const rewards = rewardMilestones.map((reward)=>{ const unlocked=d.creditedAmount>=reward.amount; return `<div class="reward-card ${unlocked?"unlocked":""}"><div class="reward-emoji">${reward.emoji}</div><div class="reward-title">${escapeHtml(reward.title)}</div><div class="reward-detail">${escapeHtml(reward.detail)}</div><div class="badge ${unlocked?"ok":""}">${unlocked?`Unlocked at ₹${reward.amount}`:`Locked until ₹${reward.amount}`}</div></div>`; }).join("");
+      const avatars = avatarThemes.map((theme,index)=>{ const isBase=index===0; const unlocked=isBase||index<=d.permanentlyUnlockedCount; const active=index===Math.min(d.activeUnlockedCount,avatarThemes.length-1); return avatarCard(theme, theme.name, theme.badge, active&&unlocked, !unlocked); }).join("");
+      const reasons = d.previewResult.reasons.map((r)=>`<div class="reason">${escapeHtml(r)}</div>`).join("");
+      const days = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"].map((day)=>`<div>${day}</div>`).join("");
+      const calendar = d.calendarDays.map((date)=>{ const key=dateKeyFromDate(date); const inCurrentMonth=date.getMonth()===state.currentMonth.getMonth(); const entry=state.records[key]; const stars=entry?(entry.totalStars||entry.stars||0):0; return `<button class="day-card ${inCurrentMonth?"":"outside"} ${key===state.selectedDate?"selected":""}" data-day="${key}"><div class="day-top"><span class="day-num">${date.getDate()}</span>${entry?`<span class="star-pill ${toneClass(stars)}">${stars}★</span>`:""}</div>${entry?`<div class="tiny" style="margin-top:12px;color:${inCurrentMonth?'#64748b':'#94a3b8'}"><div>${entry.duration} min</div><div style="margin-top:4px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">${escapeHtml(entry.notes||"Mission saved")}</div></div>`:`<div class="tiny" style="margin-top:12px;">No entry</div>`}</button>`; }).join("");
+      app.innerHTML = `
+        ${renderCelebration()}
+        <div class="grid top-grid">
+          <div class="card hero">
+            <div class="hero-wrap">
+              <div>
+                <div class="hero-sub">Kid Homework Quest</div>
+                <h1>${escapeHtml(state.profileName)}</h1>
+                <p>A playful reward app with stars, sounds, celebration popups, bonus behavior points, unlockable brainrot characters, weekly chart, calendar tracking, and backup restore.</p>
+                <div><span class="pill">📱 GitHub Pages ready</span><span class="pill">🎵 Sound effects</span><span class="pill">🎉 Celebration animations</span><span class="pill">💾 Export + import backup</span></div>
+              </div>
+              <div class="card" style="background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.12);color:white;min-width:260px;padding:16px;">
+                <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:12px;"><span style="font-size:14px;font-weight:700;">Active character</span><button class="sound-btn" id="soundToggleBtn">${state.soundOn?"🔊 Sound On":"🔈 Sound Off"}</button></div>
+                ${avatarCard(d.activeTheme, d.activeTheme.name, d.trendDown ? "One level hidden until progress improves" : "Progress is strong", true, false)}
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div style="font-size:20px;font-weight:900;">Profile and thumbnail</div>
+            <div class="profile-grid" style="margin-top:16px;">
+              <div><label class="title">Child name</label><input id="profileNameInput" type="text" value="${escapeHtml(state.profileName)}" placeholder="Enter name" /></div>
+              <div><label class="title">Upload face photo</label><input id="photoInput" type="file" accept="image/*" /><div class="upload-note">The face photo is placed on the blocky character skin so the thumbnail looks personal and game-like.</div></div>
+              <div class="info-box"><div style="font-size:14px;font-weight:800;color:#334155;">Next ₹250 character unlock</div><div style="margin-top:10px;">${progressMeter(d.pendingStars,7,"Star bank progress")}</div><div class="tiny" style="margin-top:12px;">${d.projectedNextCredit} more stars needed for the next ₹250 credit.</div></div>
+              <div class="toolbar"><button id="exportBtn" class="action-btn primary">Export backup</button><button id="importBtn" class="action-btn">Import backup</button><button id="resetBtn" class="action-btn">Reset all data</button></div>
+            </div>
+          </div>
+        </div>
+        <div class="grid stats-grid" style="margin-top:20px;">
+          ${scoreCard("Total stars", String(d.totalStars), "Homework stars plus daily habit bonus stars", true)}
+          ${scoreCard("Wallet balance", `₹${d.creditedAmount}`, "Credited only in blocks of 7 stars", true)}
+          ${scoreCard("Star bank", `${d.pendingStars} / 7`, "Saved toward the next ₹250", false)}
+          ${scoreCard("This week", String(d.weekStars), "Stars earned since Monday", false)}
+          ${scoreCard("Strong days", `${d.completionRate}%`, "Days with 6 or more stars", false)}
+          ${scoreCard("Streak", `${d.streak} days`, "Consecutive star-earning days", false)}
+        </div>
+        <div class="grid two-col" style="margin-top:20px;">
+          <div class="card">
+            <div style="display:flex;justify-content:space-between;gap:16px;align-items:center;flex-wrap:wrap;">
+              <div><div class="section-title">Today’s mission</div><div class="section-sub">Track homework discipline plus extra stars for habits, self-play, and behavior through the day.</div></div>
+              <input id="selectedDateInput" type="date" value="${state.selectedDate}" style="max-width:220px;" />
+            </div>
+            <div class="form-grid">
+              <div class="fancy-box"><label class="title">Homework duration in minutes</label><input id="durationInput" type="number" min="0" value="${Number(state.form.duration)||0}" /><div class="tiny">Under 30 minutes is best. Over 45 minutes reduces another star. Over 60 minutes gives 0 stars for that day.</div></div>
+              <div class="fancy-box alt"><label class="title">Notes</label><textarea id="notesInput" placeholder="Optional notes for the day">${escapeHtml(state.form.notes||"")}</textarea></div>
+            </div>
+            <div class="toggle-grid">${toggles}</div>
+            <div class="preview-box">
+              <div class="preview-top"><div><div style="font-size:14px;font-weight:800;color:#a21caf;">Star preview for ${formatDate(state.selectedDate)}</div><div class="preview-score">${d.previewResult.totalStars} / 15</div><div class="tiny">${d.previewResult.baseStars} homework stars + ${d.previewResult.bonusStars} daily bonus stars</div></div><button id="saveBtn" class="action-btn save-btn">Save mission</button></div>
+              <div class="reason-list">${reasons}</div>
+              ${state.lastSavedMessage ? `<div class="success">${escapeHtml(state.lastSavedMessage)}</div>` : ""}
+            </div>
+          </div>
+          <div class="card">
+            <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;"><div><div class="section-title" style="font-size:24px;">Rewards and character unlocks</div><div class="section-sub">Keep earning to unlock more fun choices.</div></div><div class="badge ok" style="font-size:12px;">₹${d.creditedAmount}</div></div>
+            <div class="reward-grid">${rewards}</div>
+            <div class="progress-box">${progressMeter(d.rewardProgress,10000,"Progress to the ₹10000 Legend Reward")}</div>
+            <div class="trend-note ${d.trendDown?"trend-down":"trend-up"}">${d.trendDown ? "Weekly progress dipped, so one avatar level is hidden for now. Better progress brings it right back." : "Weekly progress is steady or improving. All unlocked avatar levels stay active."}</div>
+            <div class="avatar-scroll"><div class="avatar-grid">${avatars}</div></div>
+          </div>
+        </div>
+        <div class="grid progress-grid" style="margin-top:20px;">
+          <div class="card">
+            <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;"><div><div class="section-title" style="font-size:24px;">Weekly progress chart</div><div class="section-sub">A simple graph to show how motivation is building.</div></div><div class="badge">Last ${Math.max(d.weeklyData.length,1)} week${d.weeklyData.length===1?"":"s"}</div></div>
+            <div class="chart-wrap"><canvas id="weeklyChart"></canvas></div>
+          </div>
+          <div class="card">
+            <div class="section-title" style="font-size:24px;">Progress snapshot</div>
+            <div class="snapshot-grid">
+              ${scoreCard("This month", String(d.monthStars), `Stars inside ${getMonthLabel(state.currentMonth)}`, true)}
+              ${scoreCard("Last week", String(d.previousWeekStars), "Compare against the current week", false)}
+              <div class="info-box" style="grid-column:1/-1;"><div style="font-size:13px;font-weight:800;color:#64748b;">Reward rule</div><div style="margin-top:8px;line-height:1.5;color:#334155;">Every time total stars reach a multiple of 7, ₹250 gets added to the wallet. Bonus stars from self-play, constructive play, hygiene, behavior, cleanliness, and listening at home also count.</div></div>
+              <div class="info-box" style="grid-column:1/-1;"><div style="font-size:13px;font-weight:800;color:#64748b;">Backup rule</div><div style="margin-top:8px;line-height:1.5;color:#334155;">Use Export backup to save the whole app state as a JSON file. Use Import backup later to restore stars, records, wallet, image, and settings on any browser.</div></div>
+            </div>
+          </div>
+        </div>
+        <div class="card" style="margin-top:20px;">
+          <div class="calendar-head"><div><div class="section-title" style="font-size:24px;">Calendar progress view</div><div class="section-sub">Tap a day to review or edit the mission results.</div></div><div class="month-nav"><button id="monthPrevBtn" class="small-btn">Previous</button><div style="min-width:170px;text-align:center;font-size:14px;font-weight:900;">${getMonthLabel(state.currentMonth)}</div><button id="monthNextBtn" class="small-btn">Next</button></div></div>
+          <div class="calendar-days">${days}</div>
+          <div class="calendar-grid" style="margin-top:8px;">${calendar}</div>
+        </div>
+        <div class="bottom-nav"><div class="nav-item active"><div class="icon">🏠</div>Home</div><div class="nav-item"><div class="icon">⭐</div>Stars</div><div class="nav-item"><div class="icon">🎁</div>Rewards</div><div class="nav-item"><div class="icon">📅</div>Calendar</div></div>
+      `;
+      bindEvents();
+      renderChart(d.weeklyData);
+    }
+    function renderChart(weeklyData){
+      const canvas=document.getElementById("weeklyChart");
+      if (!canvas || !window.Chart) return;
+      const ctx=canvas.getContext("2d");
+      const data=weeklyData.length?weeklyData:[{ week:"No data", stars:0 }];
+      if (weeklyChart) weeklyChart.destroy();
+      const gradient=ctx.createLinearGradient(0,0,0,320);
+      gradient.addColorStop(0,"rgba(217,70,239,0.42)");
+      gradient.addColorStop(1,"rgba(245,158,11,0.05)");
+      weeklyChart=new Chart(ctx,{type:"line",data:{labels:data.map(i=>i.week),datasets:[{label:"Stars",data:data.map(i=>i.stars),fill:true,backgroundColor:gradient,borderColor:"#d946ef",borderWidth:3,tension:.35,pointRadius:4,pointBackgroundColor:"#d946ef"}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{backgroundColor:"#0f172a",titleColor:"#fff",bodyColor:"#fff"}},scales:{x:{grid:{display:false},ticks:{color:"#64748b",maxRotation:0,minRotation:0}},y:{beginAtZero:true,ticks:{color:"#64748b",precision:0},grid:{color:"rgba(148,163,184,0.22)"}}}}});
+    }
+    function syncFormFromSelectedDate(){ const existing=state.records[state.selectedDate]; state.form=existing?{...defaultForm,...existing}:{...defaultForm}; }
+    function setSelectedDate(dateKey){ state.selectedDate=dateKey; syncFormFromSelectedDate(); render(); }
+    function playSound(kind="save"){
+      const AudioContextRef=window.AudioContext||window.webkitAudioContext;
+      if (!AudioContextRef) return;
+      const ctx=new AudioContextRef();
+      const now=ctx.currentTime;
+      const patterns={save:[330,392],good:[392,494,587],epic:[523,659,784,1046],unlock:[440,554,659,880]};
+      (patterns[kind]||patterns.save).forEach((freq,index)=>{ const osc=ctx.createOscillator(); const gain=ctx.createGain(); osc.type="triangle"; osc.frequency.value=freq; gain.gain.setValueAtTime(.0001,now+index*.14); gain.gain.exponentialRampToValueAtTime(.15,now+index*.14+.02); gain.gain.exponentialRampToValueAtTime(.0001,now+index*.14+.12); osc.connect(gain); gain.connect(ctx.destination); osc.start(now+index*.14); osc.stop(now+index*.14+.14); });
+      setTimeout(()=>{ if (ctx.state!=="closed") ctx.close(); }, 1000);
+    }
+    function triggerCelebration(message,soundKind){ state.celebration={ id:Date.now(), message }; if (state.soundOn) playSound(soundKind||"good"); render(); setTimeout(()=>{ state.celebration=null; render(); },2400); }
+    function handleSave(){
+      const derived=getDerived();
+      const beforeAmount=Math.floor(derived.totalStars/7)*250;
+      const result=calculateStars(state.form);
+      const entry={ ...state.form, duration:Number(state.form.duration), baseStars:result.baseStars, bonusStars:result.bonusStars, totalStars:result.totalStars, stars:result.totalStars, reasons:result.reasons, status:result.status, date:state.selectedDate, updatedAt:new Date().toISOString() };
+      const nextRecords={ ...state.records, [state.selectedDate]: entry };
+      const nextTotalStars=Object.values(nextRecords).reduce((sum,item)=>sum+(item.totalStars||item.stars||0),0);
+      const afterAmount=Math.floor(nextTotalStars/7)*250;
+      state.records=nextRecords;
+      state.lastSavedMessage=`Saved ${result.totalStars} star${result.totalStars===1?"":"s"} for ${formatDate(state.selectedDate)}.`;
+      saveState();
+      if (afterAmount>beforeAmount) triggerCelebration(`Awesome! ₹${afterAmount} unlocked!`,"unlock");
+      else if (result.totalStars>=8) triggerCelebration("Superstar day! Bonus stars earned!","epic");
+      else if (result.totalStars>=6) triggerCelebration("Great job! Keep the streak going!","good");
+      else { if (state.soundOn) playSound("save"); render(); }
+    }
+    function exportBackup(){
+      const payload={ version:1, exportedAt:new Date().toISOString(), app:"homework-quest-html", data:{ profileName:state.profileName, childPhoto:state.childPhoto, records:state.records, soundOn:state.soundOn } };
+      const blob=new Blob([JSON.stringify(payload,null,2)],{ type:"application/json" });
+      const url=URL.createObjectURL(blob);
+      const a=document.createElement("a");
+      a.href=url;
+      a.download=`homework-quest-backup-${todayKey()}.json`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      triggerCelebration("Backup exported successfully!","good");
+    }
+    function importBackup(file){
+      if (!file) return;
+      const reader=new FileReader();
+      reader.onload=()=>{ try{ const parsed=JSON.parse(String(reader.result||"{}")); const data=parsed.data||parsed; if (typeof data!=="object" || data===null) throw new Error("Invalid backup format"); state.profileName=data.profileName||"Homework Hero"; state.childPhoto=data.childPhoto||""; state.records=data.records||{}; state.soundOn=data.soundOn ?? true; state.selectedDate=todayKey(); syncFormFromSelectedDate(); state.lastSavedMessage="Backup restored successfully."; saveState(); triggerCelebration("Backup restored successfully!","unlock"); } catch(err){ alert("That backup file could not be read. Please select a valid JSON backup."); console.error(err); } };
+      reader.readAsText(file);
+    }
+    async function compressImageFile(file){
+      const imgUrl=await new Promise((resolve,reject)=>{ const reader=new FileReader(); reader.onload=()=>resolve(reader.result); reader.onerror=reject; reader.readAsDataURL(file); });
+      const img=await new Promise((resolve,reject)=>{ const i=new Image(); i.onload=()=>resolve(i); i.onerror=reject; i.src=imgUrl; });
+      const canvas=document.createElement("canvas");
+      const maxSize=320;
+      let width=img.width, height=img.height;
+      const scale=Math.min(maxSize/width,maxSize/height,1);
+      width=Math.round(width*scale); height=Math.round(height*scale);
+      canvas.width=width; canvas.height=height;
+      const ctx=canvas.getContext("2d");
+      ctx.drawImage(img,0,0,width,height);
+      return canvas.toDataURL("image/jpeg",0.82);
+    }
+    function resetAllData(){
+      const confirmed=window.confirm("This will remove all saved stars, records, wallet progress, and the photo from this browser. Continue?");
+      if (!confirmed) return;
+      state.profileName="Homework Hero"; state.childPhoto=""; state.records={}; state.soundOn=true; state.selectedDate=todayKey(); state.currentMonth=new Date(); state.lastSavedMessage=""; state.form={ ...defaultForm }; saveState(); render();
+    }
+    function bindEvents(){
+      const profileNameInput=document.getElementById("profileNameInput");
+      if (profileNameInput) profileNameInput.addEventListener("input",(e)=>{ state.profileName=e.target.value||"Homework Hero"; saveState(); render(); });
+      const photoInput=document.getElementById("photoInput");
+      if (photoInput) photoInput.addEventListener("change", async (e)=>{ const file=e.target.files&&e.target.files[0]; if (!file) return; try{ state.childPhoto=await compressImageFile(file); saveState(); triggerCelebration("Photo added to the blocky character!","good"); } catch(err){ alert("Could not process that image. Please try another one."); console.error(err); } });
+      const soundToggleBtn=document.getElementById("soundToggleBtn");
+      if (soundToggleBtn) soundToggleBtn.addEventListener("click",()=>{ state.soundOn=!state.soundOn; saveState(); render(); });
+      const exportBtn=document.getElementById("exportBtn"); if (exportBtn) exportBtn.addEventListener("click", exportBackup);
+      const importBtn=document.getElementById("importBtn"); const backupInput=document.getElementById("backupImportInput");
+      if (importBtn && backupInput){ importBtn.addEventListener("click",()=>backupInput.click()); backupInput.onchange=(e)=>{ const file=e.target.files&&e.target.files[0]; importBackup(file); e.target.value=""; }; }
+      const resetBtn=document.getElementById("resetBtn"); if (resetBtn) resetBtn.addEventListener("click", resetAllData);
+      const selectedDateInput=document.getElementById("selectedDateInput"); if (selectedDateInput) selectedDateInput.addEventListener("change",(e)=>setSelectedDate(e.target.value));
+      const durationInput=document.getElementById("durationInput"); if (durationInput) durationInput.addEventListener("input",(e)=>{ state.form.duration=e.target.value; render(); });
+      const notesInput=document.getElementById("notesInput"); if (notesInput) notesInput.addEventListener("input",(e)=>{ state.form.notes=e.target.value; });
+      document.querySelectorAll("[data-toggle]").forEach((el)=>{ el.addEventListener("click",()=>{ const key=el.getAttribute("data-toggle"); state.form[key]=!state.form[key]; render(); }); });
+      const saveBtn=document.getElementById("saveBtn"); if (saveBtn) saveBtn.addEventListener("click", handleSave);
+      const monthPrevBtn=document.getElementById("monthPrevBtn"); if (monthPrevBtn) monthPrevBtn.addEventListener("click",()=>{ state.currentMonth=new Date(state.currentMonth.getFullYear(),state.currentMonth.getMonth()-1,1); render(); });
+      const monthNextBtn=document.getElementById("monthNextBtn"); if (monthNextBtn) monthNextBtn.addEventListener("click",()=>{ state.currentMonth=new Date(state.currentMonth.getFullYear(),state.currentMonth.getMonth()+1,1); render(); });
+      document.querySelectorAll("[data-day]").forEach((el)=>{ el.addEventListener("click",()=>setSelectedDate(el.getAttribute("data-day"))); });
+    }
+    loadState();
+    syncFormFromSelectedDate();
+    render();
+  </script>
+</body>
+</html>
