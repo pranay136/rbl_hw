@@ -196,7 +196,7 @@
       { amount:7500, title:"Mega Champion", detail:"Unlock a mega celebration and special badge.", emoji:"🏆" },
       { amount:10000, title:"Legend Reward", detail:"Unlock the final legendary reward tier.", emoji:"👑" }
     ];
-    const defaultForm = { duration:30, completedHomework:true, stayedInOnePlace:true, gotUp:false, talked:false, tookBreak:false, focused:true, goodBehavior:false, noComplaint:false, selfPlayHour:false, legoFreePlayHour:false, constructivePlayHour:false, bathAndBrush:false, goodHandwritingAllDay:false, handwritingNotGood:false, noMessAllDay:false, shouting:false, notListeningInOneGo:false, listenedToParents:false, feeling:"happy", bestThing:"", notes:"" };
+    const defaultForm = { duration:30, completedHomework:true, stayedInOnePlace:true, gotUp:false, talked:false, tookBreak:false, focused:true, goodBehavior:false, noComplaint:false, selfPlayHour:false, legoFreePlayHour:false, readBooksHour:false, constructivePlayHour:false, bathAndBrush:false, goodHandwritingAllDay:false, handwritingNotGood:false, noMessAllDay:false, shouting:false, notListeningInOneGo:false, listenedToParents:false, feeling:"happy", bestThing:"", notes:"" };
     const defaultSpendForm = { amount:500, purchaseNote:"" };
     const toggleDefinitions = [
       { key:"completedHomework", label:"Homework fully completed", emoji:"✅", positive:true },
@@ -209,6 +209,7 @@
       { key:"noComplaint", label:"No complaint bonus star", emoji:"😇", positive:true },
       { key:"selfPlayHour", label:"1 hour of self-play", emoji:"🧩", positive:true },
       { key:"legoFreePlayHour", label:"1 hour of Lego free play", emoji:"🧱", positive:true },
+      { key:"readBooksHour", label:"Read books for 1 hour", emoji:"📚", positive:true },
       { key:"constructivePlayHour", label:"1 hour of constructive play", emoji:"🛠️", positive:true },
       { key:"bathAndBrush", label:"Took bath and brushed nicely", emoji:"🛁", positive:true },
       { key:"goodHandwritingAllDay", label:"Good handwriting all day", emoji:"✍️", positive:true },
@@ -247,6 +248,7 @@
       if (entry.noComplaint){ bonusStars += 1; bonusReasons.push("no complaint bonus"); }
       if (entry.selfPlayHour){ bonusStars += 1; bonusReasons.push("1 hour of self-play"); }
       if (entry.legoFreePlayHour){ bonusStars += 1; bonusReasons.push("1 hour of Lego free play"); }
+      if (entry.readBooksHour){ bonusStars += 1; bonusReasons.push("read books for 1 hour"); }
       if (entry.constructivePlayHour){ bonusStars += 1; bonusReasons.push("1 hour of constructive play"); }
       if (entry.bathAndBrush){ bonusStars += 1; bonusReasons.push("bath and brushing nicely"); }
       if (entry.goodHandwritingAllDay){ bonusStars += 1; bonusReasons.push("good handwriting all day"); }
@@ -460,7 +462,7 @@
             </div>
             <div class="toggle-grid">${toggles}</div>
             <div class="preview-box">
-              <div class="preview-top"><div><div style="font-size:14px;font-weight:800;color:#a21caf;">Star preview for ${formatDate(state.selectedDate)}</div><div class="preview-score">${d.previewResult.totalStars} / 15</div><div class="tiny">${d.previewResult.baseStars} homework stars + ${d.previewResult.bonusStars} daily bonus stars</div></div><button id="saveBtn" class="action-btn save-btn">Save mission</button></div>
+              <div class="preview-top"><div><div style="font-size:14px;font-weight:800;color:#a21caf;">Star preview for ${formatDate(state.selectedDate)}</div><div class="preview-score">${d.previewResult.totalStars} / 16</div><div class="tiny">${d.previewResult.baseStars} homework stars + ${d.previewResult.bonusStars} daily bonus stars</div></div><button id="saveBtn" class="action-btn save-btn">Save mission</button></div>
               <div class="reason-list">${reasons}</div>
               ${state.lastSavedMessage ? `<div class="success">${escapeHtml(state.lastSavedMessage)}</div>` : ""}
             </div>
