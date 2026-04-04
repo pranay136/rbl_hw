@@ -196,7 +196,7 @@
       { amount:7500, title:"Mega Champion", detail:"Unlock a mega celebration and special badge.", emoji:"🏆" },
       { amount:10000, title:"Legend Reward", detail:"Unlock the final legendary reward tier.", emoji:"👑" }
     ];
-    const defaultForm = { duration:30, completedHomework:true, stayedInOnePlace:true, gotUp:false, talked:false, tookBreak:false, focused:true, goodBehavior:false, noComplaint:false, selfPlayHour:false, constructivePlayHour:false, bathAndBrush:false, goodHandwritingAllDay:false, noMessAllDay:false, listenedToParents:false, feeling:"happy", bestThing:"", notes:"" };
+    const defaultForm = { duration:30, completedHomework:true, stayedInOnePlace:true, gotUp:false, talked:false, tookBreak:false, focused:true, goodBehavior:false, noComplaint:false, selfPlayHour:false, legoFreePlayHour:false, constructivePlayHour:false, bathAndBrush:false, goodHandwritingAllDay:false, handwritingNotGood:false, noMessAllDay:false, shouting:false, notListeningInOneGo:false, listenedToParents:false, feeling:"happy", bestThing:"", notes:"" };
     const defaultSpendForm = { amount:500, purchaseNote:"" };
     const toggleDefinitions = [
       { key:"completedHomework", label:"Homework fully completed", emoji:"✅", positive:true },
@@ -208,11 +208,14 @@
       { key:"goodBehavior", label:"Good behavior bonus star", emoji:"🌟", positive:true },
       { key:"noComplaint", label:"No complaint bonus star", emoji:"😇", positive:true },
       { key:"selfPlayHour", label:"1 hour of self-play", emoji:"🧩", positive:true },
+      { key:"legoFreePlayHour", label:"1 hour of Lego free play", emoji:"🧱", positive:true },
       { key:"constructivePlayHour", label:"1 hour of constructive play", emoji:"🛠️", positive:true },
       { key:"bathAndBrush", label:"Took bath and brushed nicely", emoji:"🛁", positive:true },
       { key:"goodHandwritingAllDay", label:"Good handwriting all day", emoji:"✍️", positive:true },
+      { key:"handwritingNotGood", label:"Bad handwriting penalty", emoji:"✏️", positive:false },
       { key:"noMessAllDay", label:"Did not create a mess all day", emoji:"🧼", positive:true },
-      { key:"listenedToParents", label:"Listen to Parents in 1 go", emoji:"🙌", positive:true }
+      { key:"shouting", label:"Shouting penalty", emoji:"😡", positive:false },
+      { key:"notListeningInOneGo", label:"Did not listen in 1 go", emoji:"🙉", positive:false }
     ];
     let state = { profileName:"Homework Hero", childPhoto:"", records:{}, debits:[], selectedDate:todayKey(), form:{ ...defaultForm }, spendForm:{ ...defaultSpendForm }, currentMonth:new Date(), lastSavedMessage:"", soundOn:true, celebration:null };
     let weeklyChart = null;
@@ -226,7 +229,7 @@
       if (Number(entry.duration) > 60) return { baseStars:0, bonusStars:0, totalStars:0, reasons:["More than 60 minutes means 0 stars for the day."], status:"reset" };
       let baseStars = 7;
       const reasons = [];
-      if (!entry.completedHomework){ baseStars -= 1; reasons.push("Homework was not fully completed."); }
+      if (!entry.completedHomework){ baseStars -= 5; reasons.push("Homework was not fully completed. 5 stars reduced."); }
       if (Number(entry.duration) > 30){ baseStars -= 1; reasons.push("Took more than 30 minutes."); }
       if (Number(entry.duration) > 45){ baseStars -= 1; reasons.push("Took more than 45 minutes."); }
       if (!entry.stayedInOnePlace){ baseStars -= 1; reasons.push("Did not sit in one place."); }
@@ -234,20 +237,23 @@
       if (entry.talked){ baseStars -= 1; reasons.push("Talked during homework."); }
       if (entry.tookBreak){ baseStars -= 1; reasons.push("Took a break in between."); }
       if (!entry.focused){ baseStars -= 1; reasons.push("Focus was broken."); }
+      if (entry.handwritingNotGood){ baseStars -= 2; reasons.push("Bad handwriting penalty. 2 stars reduced."); }
+      if (entry.shouting){ baseStars -= 1; reasons.push("Shouting happened. 1 star reduced."); }
+      if (entry.notListeningInOneGo){ baseStars -= 1; reasons.push("Did not listen in 1 go. 1 star reduced."); }
       baseStars = Math.max(0, baseStars);
       let bonusStars = 0;
       const bonusReasons = [];
       if (entry.goodBehavior){ bonusStars += 1; bonusReasons.push("good behavior bonus"); }
       if (entry.noComplaint){ bonusStars += 1; bonusReasons.push("no complaint bonus"); }
       if (entry.selfPlayHour){ bonusStars += 1; bonusReasons.push("1 hour of self-play"); }
+      if (entry.legoFreePlayHour){ bonusStars += 1; bonusReasons.push("1 hour of Lego free play"); }
       if (entry.constructivePlayHour){ bonusStars += 1; bonusReasons.push("1 hour of constructive play"); }
       if (entry.bathAndBrush){ bonusStars += 1; bonusReasons.push("bath and brushing nicely"); }
       if (entry.goodHandwritingAllDay){ bonusStars += 1; bonusReasons.push("good handwriting all day"); }
       if (entry.noMessAllDay){ bonusStars += 1; bonusReasons.push("no mess throughout the day"); }
-      if (entry.listenedToParents){ bonusStars += 1; bonusReasons.push("listened to mother and father"); }
       if (bonusStars > 0){ reasons.push(`Bonus stars earned: ${bonusStars}.`); reasons.push(`Bonus sources: ${bonusReasons.join(", ")}.`); }
       if (!reasons.length) reasons.push("Perfect session. All homework stars earned.");
-      const totalStars = baseStars + bonusStars;
+      const totalStars = Math.max(0, baseStars + bonusStars);
       const status = totalStars >= 12 ? "epic" : totalStars >= 8 ? "great" : totalStars >= 4 ? "good" : "tryAgain";
       return { baseStars, bonusStars, totalStars, reasons, status };
     }
@@ -617,7 +623,7 @@
       const bestThingInput=document.getElementById("bestThingInput"); if (bestThingInput) bestThingInput.addEventListener("input",(e)=>{ state.form.bestThing=e.target.value; });
       const spendAmountInput=document.getElementById("spendAmountInput"); if (spendAmountInput) spendAmountInput.addEventListener("input",(e)=>{ state.spendForm.amount=e.target.value; render(); });
       const purchaseNoteInput=document.getElementById("purchaseNoteInput"); if (purchaseNoteInput) purchaseNoteInput.addEventListener("input",(e)=>{ state.spendForm.purchaseNote=e.target.value; });
-      document.querySelectorAll("[data-toggle]").forEach((el)=>{ el.addEventListener("click",()=>{ const key=el.getAttribute("data-toggle"); state.form[key]=!state.form[key]; render(); }); });
+      document.querySelectorAll("[data-toggle]").forEach((el)=>{ el.addEventListener("click",()=>{ const key=el.getAttribute("data-toggle"); const nextValue = !state.form[key]; state.form[key]=nextValue; if (key==="goodHandwritingAllDay" && nextValue) state.form.handwritingNotGood=false; if (key==="handwritingNotGood" && nextValue) state.form.goodHandwritingAllDay=false; render(); }); });
       const saveBtn=document.getElementById("saveBtn"); if (saveBtn) saveBtn.addEventListener("click", handleSave);
       const debitBtn=document.getElementById("debitBtn"); if (debitBtn) debitBtn.addEventListener("click", handleDebit);
       const monthPrevBtn=document.getElementById("monthPrevBtn"); if (monthPrevBtn) monthPrevBtn.addEventListener("click",()=>{ state.currentMonth=new Date(state.currentMonth.getFullYear(),state.currentMonth.getMonth()-1,1); render(); });
