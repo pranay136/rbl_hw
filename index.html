@@ -196,7 +196,7 @@
       { amount:7500, title:"Mega Champion", detail:"Unlock a mega celebration and special badge.", emoji:"🏆" },
       { amount:10000, title:"Legend Reward", detail:"Unlock the final legendary reward tier.", emoji:"👑" }
     ];
-    const defaultForm = { duration:30, completedHomework:true, stayedInOnePlace:true, gotUp:false, talked:false, tookBreak:false, focused:true, goodBehavior:false, noComplaint:false, selfPlayHour:false, legoFreePlayHour:false, readBooksHour:false, constructivePlayHour:false, bathAndBrush:false, goodHandwritingAllDay:false, handwritingNotGood:false, noMessAllDay:false, shouting:false, notListeningInOneGo:false, listenedToParents:false, feeling:"happy", bestThing:"", notes:"" };
+    const defaultForm = { duration:30, completedHomework:true, stayedInOnePlace:true, gotUp:false, talked:false, tookBreak:false, focused:true, goodBehavior:false, noComplaint:false, selfPlayHour:false, legoFreePlayHour:false, readBooksHour:false, constructivePlayHour:false, bathAndBrush:false, goodHandwritingAllDay:false, handwritingNotGood:false, noMessAllDay:false, shouting:false, notListeningInOneGo:false, playedRoblox:false, screenTimeOverOneHour:false, cryingForNoReason:false, beingATurtle:false, listenedToParents:false, feeling:"happy", bestThing:"", notes:"" };
     const defaultSpendForm = { amount:500, purchaseNote:"" };
     const toggleDefinitions = [
       { key:"completedHomework", label:"Homework fully completed", emoji:"✅", positive:true },
@@ -216,7 +216,11 @@
       { key:"handwritingNotGood", label:"Bad handwriting penalty", emoji:"✏️", positive:false },
       { key:"noMessAllDay", label:"Did not create a mess all day", emoji:"🧼", positive:true },
       { key:"shouting", label:"Shouting penalty", emoji:"😡", positive:false },
-      { key:"notListeningInOneGo", label:"Did not listen in 1 go", emoji:"🙉", positive:false }
+      { key:"notListeningInOneGo", label:"Did not listen in 1 go", emoji:"🙉", positive:false },
+      { key:"playedRoblox", label:"Played Roblox penalty", emoji:"🎮", positive:false },
+      { key:"screenTimeOverOneHour", label:"Screen time over 1 hour", emoji:"📱", positive:false },
+      { key:"cryingForNoReason", label:"Crying for no reason", emoji:"😭", positive:false },
+      { key:"beingATurtle", label:"Being a turtle", emoji:"🐢", positive:false }
     ];
     let state = { profileName:"Homework Hero", childPhoto:"", records:{}, debits:[], selectedDate:todayKey(), form:{ ...defaultForm }, spendForm:{ ...defaultSpendForm }, currentMonth:new Date(), lastSavedMessage:"", soundOn:true, celebration:null };
     let weeklyChart = null;
@@ -241,6 +245,10 @@
       if (entry.handwritingNotGood){ baseStars -= 2; reasons.push("Bad handwriting penalty. 2 stars reduced."); }
       if (entry.shouting){ baseStars -= 1; reasons.push("Shouting happened. 1 star reduced."); }
       if (entry.notListeningInOneGo){ baseStars -= 1; reasons.push("Did not listen in 1 go. 1 star reduced."); }
+      if (entry.playedRoblox){ baseStars -= 1; reasons.push("Played Roblox. 1 star reduced."); }
+      if (entry.screenTimeOverOneHour){ baseStars -= 1; reasons.push("Screen time went above 1 hour. 1 star reduced."); }
+      if (entry.cryingForNoReason){ baseStars -= 1; reasons.push("Crying for no reason. 1 star reduced."); }
+      if (entry.beingATurtle){ baseStars -= 1; reasons.push("Being a turtle. 1 star reduced."); }
       baseStars = Math.max(0, baseStars);
       let bonusStars = 0;
       const bonusReasons = [];
@@ -263,7 +271,7 @@
     function weekLabelFromDate(dateKey){ const start=getWeekStart(dateKey); const end=new Date(start); end.setDate(start.getDate()+6); return `${start.toLocaleDateString(undefined,{ month:"short", day:"numeric" })} - ${end.toLocaleDateString(undefined,{ month:"short", day:"numeric" })}`; }
     function getCalendarDays(currentMonth){ const y=currentMonth.getFullYear(); const m=currentMonth.getMonth(); const first=new Date(y,m,1); const last=new Date(y,m+1,0); const start=new Date(first); const startDay=start.getDay(); const mondayShift=startDay===0?6:startDay-1; start.setDate(start.getDate()-mondayShift); const end=new Date(last); const endDay=end.getDay(); const sundayShift=endDay===0?0:7-endDay; end.setDate(end.getDate()+sundayShift); const days=[]; const cursor=new Date(start); while (cursor<=end){ days.push(new Date(cursor)); cursor.setDate(cursor.getDate()+1);} return days; }
     function toneClass(stars){ if (stars >= 8) return "tone-high"; if (stars >= 5) return "tone-mid"; if (stars >= 1) return "tone-low"; return "tone-zero"; }
-    function saveState(){ localStorage.setItem(STORAGE_KEY, JSON.stringify({ version:3, profileName:state.profileName, childPhoto:state.childPhoto, records:state.records, debits:state.debits, soundOn:state.soundOn })); }
+    function saveState(){ localStorage.setItem(STORAGE_KEY, JSON.stringify({ version:4, profileName:state.profileName, childPhoto:state.childPhoto, records:state.records, debits:state.debits, soundOn:state.soundOn })); }
     function loadState(){ const raw=localStorage.getItem(STORAGE_KEY); if (!raw) return; try{ const parsed=JSON.parse(raw); state.profileName=parsed.profileName||"Homework Hero"; state.childPhoto=parsed.childPhoto||""; state.records=parsed.records||{}; state.debits=parsed.debits||[]; state.soundOn=parsed.soundOn ?? true; } catch(err){ console.error("Could not load saved data", err); } }
     function getRecordsArray(){ return Object.values(state.records).sort((a,b)=>a.date.localeCompare(b.date)); }
 
